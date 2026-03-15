@@ -8,10 +8,10 @@ import logging
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 import pytest
 import time
 import traitlets
+
 from pathlib import Path
 from urllib.request import urlretrieve
 
@@ -116,7 +116,6 @@ def check_equal_networks(net1, net2):
 def test_gui_load_params():
     """Test if gui loads default parameters properly"""
     gui = HNNGUI()
-
     assert isinstance(gui.params, dict)
     assert gui.params["object_type"] == "Network"
     plt.close("all")
@@ -1079,7 +1078,7 @@ def test_gui_upload_csv_simulation(setup_gui):
     # Formulate path to the file
     file_path = assets_path / "test_default.csv"
     absolute_path = str(file_path.resolve())
-    if os.name == "nt":  # Windows
+    if Path().anchor == "\\":  # Windows
         # Convert backslashes to forward slashes and
         # ensure we have three slashes after 'file:'
         file_url = "file:///" + absolute_path.replace("\\", "/")

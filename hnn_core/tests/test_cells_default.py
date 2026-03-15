@@ -2,6 +2,7 @@ import pytest
 
 from neuron import h
 import numpy as np
+from pathlib import Path
 
 from hnn_core.cells_default import (
     pyramidal,

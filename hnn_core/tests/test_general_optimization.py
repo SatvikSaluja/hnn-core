@@ -7,8 +7,8 @@ import pytest
 
 from hnn_core import neymotin_2020_model, simulate_dipole
 from hnn_core.optimization import Optimizer
+from pathlib import Path
 import numpy as np
-
 
 @pytest.mark.parametrize("solver", ["bayesian", "cobyla", "cma"])
 @pytest.mark.parametrize("obj_fun", ["dipole_rmse", "dipole_corr"])
