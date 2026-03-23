@@ -13,10 +13,23 @@ from hnn_core.extracellular import (
     ExtracellularArray,
     calculate_csd2d,
     _get_laminar_z_coords,
+    _transfer_resistance,
 )
 from hnn_core.parallel_backends import requires_mpi4py, requires_psutil
 
 import matplotlib.pyplot as plt
+
+def _create_test_section():
+    from neuron import h
+
+    sec = h.Section(name="dend")
+    h.pt3dclear(sec=sec)
+    h.pt3dadd(0, 0, 0, 1, sec=sec)
+    h.pt3dadd(0, 1, 0, 1, sec=sec)
+    sec.L = 300
+    sec.diam = 8
+    sec.nseg = 5
+    return sec
 
 
 hnn_core_root = op.dirname(hnn_core.__file__)
@@ -152,7 +165,6 @@ def test_transmembrane_currents():
 def test_transfer_resistance():
     """Test transfer resistances calculated correctly"""
     from neuron import h
-    from hnn_core.extracellular import _transfer_resistance
 
     sec = h.Section(name="dend")
     h.pt3dclear(sec=sec)
@@ -200,6 +212,52 @@ def test_transfer_resistance():
     for method in ["psa", "lsa"]:
         res = _transfer_resistance(sec, elec_pos, conductivity, method)
         assert_allclose(res, target_vals[method], rtol=1e-12, atol=0.0)
+
+
+def test_transfer_resistance_finite_output():
+    """Ensure finite outputs for very small electrode distance."""
+
+    sec = _create_test_section()
+    elec_pos = (1e-12, 150, 0)
+
+    for method in ["psa", "lsa"]:
+        res = _transfer_resistance(sec, elec_pos, 0.3, method)
+        assert np.all(np.isfinite(res))
+        assert np.all(res > 0)
+        assert len(res) == sec.nseg
+
+
+def test_transfer_resistance_min_distance_effect():
+    """Ensure min_distance prevents numerical instability."""
+
+    sec = _create_test_section()
+    elec_pos = (0, 150, 0)
+
+    for method in ["psa", "lsa"]:
+        res = _transfer_resistance(sec, elec_pos, 0.3, method, min_distance=0.5)
+        assert np.all(np.isfinite(res))
+        assert np.all(res > 0)
+        assert len(res) == sec.nseg
+
+
+def test_transfer_resistance_large_distance():
+    """Ensure stability for very large electrode distances."""
+    sec = _create_test_section()
+    elec_pos = (1e6, 1e6, 0)
+
+    for method in ["psa", "lsa"]:
+        res = _transfer_resistance(sec, elec_pos, 0.3, method)
+        assert np.all(np.isfinite(res))
+        assert np.all(res > 0)
+        assert len(res) == sec.nseg
+
+
+def test_transfer_resistance_invalid_method():
+    """Ensure invalid method raises ValueError."""
+    sec = _create_test_section()
+
+    with pytest.raises(ValueError):
+        _transfer_resistance(sec, (1, 1, 1), 0.3, "invalid")
 
 
 @requires_mpi4py
