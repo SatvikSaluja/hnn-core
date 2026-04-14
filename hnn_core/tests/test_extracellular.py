@@ -1,7 +1,6 @@
 # Authors: Nick Tolley <nicholas_tolley@brown.edu>
 #          Christopher Bailey <cjb@cfin.au.dk>
 
-from copy import deepcopy
 import os.path as op
 import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal
@@ -21,7 +20,6 @@ import matplotlib.pyplot as plt
 
 hnn_core_root = op.dirname(hnn_core.__file__)
 params_fname = op.join(hnn_core_root, "param", "default.json")
-params = read_params(params_fname)
 
 
 def test_extracellular_api():
@@ -131,7 +129,8 @@ def test_extracellular_api():
 
 def test_transmembrane_currents():
     """Test that net transmembrane current is zero at all times."""
-    params.update(
+    params_local = read_params(params_fname)
+    params_local.update(
         {
             "N_pyr_x": 3,
             "N_pyr_y": 3,
