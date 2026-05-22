@@ -14,7 +14,7 @@ from subprocess import Popen, PIPE, TimeoutExpired
 import binascii
 from queue import Queue, Empty
 from threading import Thread, Event
-
+from pathlib import Path
 from typing import Union
 
 from .cell_response import CellResponse
@@ -439,7 +439,7 @@ def _get_procs_running(proc_name):
             proc_name == p.info["name"]
             or (
                 p.info["exe"] is not None
-                and os.path.basename(p.info["exe"]) == proc_name
+                and Path(p.info["exe"]).name == proc_name
             )
             or (p.info["cmdline"] and p.info["cmdline"][0] == proc_name)
         ):
@@ -579,7 +579,7 @@ class JoblibBackend(object):
 def _determine_cores_hwthreading(
     use_hwthreading_if_found: bool = True,
     sensible_default_cores: bool = True,
-) -> [int, bool]:
+) -> tuple[int, bool]:
     """Return the available core number and if hardware-threading is detected.
 
     If the first argument 'use_hwthreading_if_found' is 'True', then the
@@ -918,9 +918,7 @@ class MPIBackend(object):
             " nrniv -python -mpi -nobanner "
             + sys.executable
             + " "
-            + os.path.join(
-                os.path.dirname(sys.modules[__name__].__file__), "mpi_child.py"
-            )
+            + str(Path(sys.modules[__name__].__file__).parent / "mpi_child.py")
         )
 
         # Split the command into shell arguments for passing to Popen

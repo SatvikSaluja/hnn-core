@@ -3,12 +3,12 @@
 #          George Dang <george_dang@brown.edu>
 import codecs
 import io
+import os
 import json
 import logging
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-import os
 import pytest
 import time
 import traitlets
