@@ -444,6 +444,7 @@ class Network:
         mesh_shape=(10, 10),
         pos_dict=None,
         cell_types=None,
+        orignal_synapse_creation=True
     ):
         # Save the parameters used to create the Network
         _validate_type(params, dict, "params")
@@ -476,7 +477,7 @@ class Network:
         # external drives and biases
         self.external_drives = dict()
         self.external_biases = dict()
-
+        self.orignal_synapse_creation = orignal_synapse_creation
         # network connectivity
         self.connectivity = list()
         self.threshold = self._params["threshold"]
@@ -1689,6 +1690,72 @@ class Network:
     def gid_to_type(self, gid):
         """Reverse lookup of gid to type."""
         return _gid_to_type(gid, self.gid_ranges)
+    
+    def build_synapse_tree(self):
+        max_gid = 0
+        for conn in self.connectivity:
+            for target_gid in conn['target_gids']:
+                max_gid = max(max_gid, target_gid)
+
+        synapse_trees = [dict() for _ in range(max_gid + 1)]
+
+        for conn in self.connectivity:
+            src_type = conn['src_type']
+            target_type = conn['target_type']
+            loc = conn['loc']
+            receptor = conn['receptor']
+
+            target_cell = self.cell_types[target_type]['cell_object']
+
+            if loc == 'soma':
+                valid_sections = ['soma']
+            else:
+                valid_sections = target_cell.sect_loc[loc]
+
+            segment = 0.5
+
+            """
+            orignally our structure was 
+
+            gid 
+                source
+                    sectiom
+                        segment
+                            receptor
+            /code
+            for target_gid in conn['target_gids']:
+                tree = synapse_trees[target_gid]
+                tree.setdefault(src_type, {})
+
+                for sec_name in valid_sections:
+                tree[src_type].setdefault(sec_name, {})
+                tree[src_type][sec_name].setdefault(segment, [])
+
+                if receptor not in tree[src_type][sec_name][segment]:
+                    tree[src_type][sec_name][segment].append(receptor)
+
+            now our structure is a list of synapse_tree(index is gid)
+            the individual synapse tree
+            gid
+                section 
+                    segment
+                        receptor
+                            source
+
+            """
+            for target_gid in conn['target_gids']:
+                tree=synapse_trees[target_gid]
+                #first our strucutre was source 
+                for sec_name in valid_sections:
+                    tree.setdefault(sec_name, {})
+                    tree[sec_name].setdefault(segment, {})
+                    tree[sec_name][segment].setdefault(receptor, [])
+
+                    if src_type not in tree[sec_name][segment][receptor]:
+                        tree[sec_name][segment][receptor].append(src_type)
+
+        self.synapse_trees = synapse_trees
+        return synapse_trees
 
     def add_connection(
         self,
@@ -1892,10 +1959,14 @@ class Network:
         # Probabilistically define connections
         if probability != 1.0:
             _connection_probability(conn, probability, conn_seed)
-
         conn["probability"] = probability
         conn["allow_autapses"] = allow_autapses
         self.connectivity.append(deepcopy(conn))
+        #i had earlier tried to call build_synapse_trees before line 1934 but it couldnt access connectivity, so it is always accesed after net.connectivity is incremented filled
+        if(not(self.orignal_synapse_creation)):
+            self.build_synapse_tree()
+        else:
+            self.synapse_trees=None
 
     def clear_connectivity(self):
         """Remove all connections defined in Network.connectivity"""

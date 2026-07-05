@@ -608,13 +608,22 @@ class Cell:
                         p_mech[attr] = [seg_xs, seg_vals]
         return self.sections
     
-    def _create_synapses(self, syn_tree_gid):
+    def _create_synapses_orignal(self, sections, synapses):
         """Create synapses."""
-        for source in syn_tree_gid:
-            for sec_name in syn_tree_gid[source]:
-                for segment in syn_tree_gid[source][sec_name]:
-                    for receptor in syn_tree_gid[source][sec_name][segment]:
-                        syn_key = f"{source}_{sec_name}_{segment}_{receptor}"
+        for sec_name in sections:
+            for receptor in sections[sec_name].syns:
+                syn_key = f"{sec_name}_{receptor}"
+                seg = self._nrn_sections[sec_name](0.5)
+                self._nrn_synapses[syn_key] = self.syn_create(seg, **synapses[receptor])
+
+
+    def _create_synapses_using_synapse_trees(self, syn_tree_gid):
+        """Create synapses."""
+        for sec_name in syn_tree_gid:
+            for segment in syn_tree_gid[sec_name]:
+                for receptor in syn_tree_gid[sec_name][segment]:
+                    for source in syn_tree_gid[sec_name][segment][receptor]:
+                        syn_key = f"{sec_name}_{segment}_{receptor}_{source}"
                         seg = self._nrn_sections[sec_name](segment)
                         self._nrn_synapses[syn_key] = self.syn_create(seg, **self.synapses[receptor])
             
@@ -687,7 +696,10 @@ class Cell:
             of a pyramidal neuron.
         """
         self._create_sections(self.sections, self.cell_tree)
-        self._create_synapses(syn_tree_gid)
+        if(not(syn_tree_gid)):
+            self._create_synapses_orignal(self.sections,self.synapses)
+        else:
+            self._create_synapses_using_synapse_trees(syn_tree_gid)
         self._set_biophysics(self.sections)
         if sec_name_apical in self._nrn_sections:
             self._insert_dipole(sec_name_apical)

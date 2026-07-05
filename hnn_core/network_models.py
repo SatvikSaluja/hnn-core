@@ -71,6 +71,7 @@ def neymotin_2020_model(
     add_drives_from_params=False,
     legacy_mode=False,
     mesh_shape=(10, 10),
+    orignal_synapse_creation=True,
 ):
     """Instantiate the network model described in Neymotin et al. 2020
 
@@ -172,6 +173,7 @@ def neymotin_2020_model(
         mesh_shape=mesh_shape,
         pos_dict=pos_dict,
         cell_types=cell_types,
+        orignal_synapse_creation=orignal_synapse_creation,
     )
 
     delay = net.delay
@@ -300,6 +302,7 @@ def jones_2009_model(
     add_drives_from_params=False,
     legacy_mode=False,
     mesh_shape=(10, 10),
+    orignal_synapse_creation=True,
 ):
     """Instantiate the network model described in Jones et al., 2009.
 
@@ -362,7 +365,7 @@ def jones_2009_model(
         DeprecationWarning,
     )
 
-    net = neymotin_2020_model(params, add_drives_from_params, legacy_mode, mesh_shape)
+    net = neymotin_2020_model(params, add_drives_from_params, legacy_mode, mesh_shape,orignal_synapse_creation=orignal_synapse_creation,)
     return net
 
 
@@ -371,6 +374,7 @@ def law_2021_model(
     add_drives_from_params=False,
     legacy_mode=False,
     mesh_shape=(10, 10),
+    orignal_synapse_creation=True,
 ):
     """Instantiate the expansion of Jones 2009 model to study beta
     modulated ERPs as described in
@@ -410,6 +414,7 @@ def law_2021_model(
         add_drives_from_params,
         legacy_mode,
         mesh_shape=mesh_shape,
+        orignal_synapse_creation=orignal_synapse_creation,
     )
 
     # Update biophysics (increase gabab duration of inhibition)
@@ -463,6 +468,7 @@ def calcium_model(
     add_drives_from_params=False,
     legacy_mode=False,
     mesh_shape=(10, 10),
+    orignal_synapse_creation=True,
 ):
     """Instantiate the Jones 2009 model with improved calcium dynamics in
     L5 pyramidal neurons. For more details on changes to calcium dynamics
@@ -502,6 +508,7 @@ def calcium_model(
         add_drives_from_params,
         legacy_mode,
         mesh_shape=mesh_shape,
+        orignal_synapse_creation=orignal_synapse_creation,
     )
 
     # Replace L5 pyramidal cell template with updated calcium
