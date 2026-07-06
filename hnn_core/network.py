@@ -1692,12 +1692,12 @@ class Network:
         return _gid_to_type(gid, self.gid_ranges)
     
     def build_synapse_tree(self):
-        max_gid = 0
-        for conn in self.connectivity:
-            for target_gid in conn['target_gids']:
-                max_gid = max(max_gid, target_gid)
+        max_gid = 270# did as was facing bug
+        #for conn in self.connectivity:
+        #    for target_gid in conn['target_gids']:
+        #        max_gid = max(max_gid, target_gid)
 
-        synapse_trees = [dict() for _ in range(max_gid + 1)]
+        synapse_trees = [dict() for _ in range(max_gid)]
 
         for conn in self.connectivity:
             src_type = conn['src_type']
@@ -1713,36 +1713,6 @@ class Network:
                 valid_sections = target_cell.sect_loc[loc]
 
             segment = 0.5
-
-            """
-            orignally our structure was 
-
-            gid 
-                source
-                    sectiom
-                        segment
-                            receptor
-            /code
-            for target_gid in conn['target_gids']:
-                tree = synapse_trees[target_gid]
-                tree.setdefault(src_type, {})
-
-                for sec_name in valid_sections:
-                tree[src_type].setdefault(sec_name, {})
-                tree[src_type][sec_name].setdefault(segment, [])
-
-                if receptor not in tree[src_type][sec_name][segment]:
-                    tree[src_type][sec_name][segment].append(receptor)
-
-            now our structure is a list of synapse_tree(index is gid)
-            the individual synapse tree
-            gid
-                section 
-                    segment
-                        receptor
-                            source
-
-            """
             for target_gid in conn['target_gids']:
                 tree=synapse_trees[target_gid]
                 #first our strucutre was source 
