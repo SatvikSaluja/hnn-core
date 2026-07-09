@@ -198,7 +198,6 @@ def neymotin_2020_model(
                 weight,
                 delay,
                 lamtha,
-                source=target_cell,
                 allow_autapses=False,
             )
 
@@ -210,7 +209,7 @@ def neymotin_2020_model(
     for receptor in ["gabaa", "gabab"]:
         key = f"gbar_L2Basket_L2Pyr_{receptor}"
         weight = net._params[key]
-        net.add_connection(src_cell, target_cell, loc, receptor, weight, delay, lamtha,source=src_cell)
+        net.add_connection(src_cell, target_cell, loc, receptor, weight, delay, lamtha)
 
     # layer5 Basket -> layer5 Pyr
     src_cell = "L5_basket"
@@ -220,7 +219,7 @@ def neymotin_2020_model(
     for receptor in ["gabaa", "gabab"]:
         key = f"gbar_L5Basket_{_short_name(target_cell)}_{receptor}"
         weight = net._params[key]
-        net.add_connection(src_cell, target_cell, loc, receptor, weight, delay, lamtha, source=src_cell)
+        net.add_connection(src_cell, target_cell, loc, receptor, weight, delay, lamtha)
 
     # layer2 Pyr -> layer5 Pyr
     src_cell = "L2_pyramidal"
@@ -229,7 +228,7 @@ def neymotin_2020_model(
     for loc in ["proximal", "distal"]:
         key = f"gbar_L2Pyr_{_short_name(target_cell)}"
         weight = net._params[key]
-        net.add_connection(src_cell, target_cell, loc, receptor, weight, delay, lamtha, source=src_cell)
+        net.add_connection(src_cell, target_cell, loc, receptor, weight, delay, lamtha)
 
     # layer2 Basket -> layer5 Pyr
     src_cell = "L2_basket"
@@ -238,7 +237,7 @@ def neymotin_2020_model(
     weight = net._params[key]
     loc = "distal"
     receptor = "gabaa"
-    net.add_connection(src_cell, target_cell, loc, receptor, weight, delay, lamtha, source=src_cell)
+    net.add_connection(src_cell, target_cell, loc, receptor, weight, delay, lamtha)
 
     # xx -> layer2 Basket
     src_cell = "L2_pyramidal"
@@ -248,7 +247,7 @@ def neymotin_2020_model(
     weight = net._params[key]
     loc = "soma"
     receptor = "ampa"
-    net.add_connection(src_cell, target_cell, loc, receptor, weight, delay, lamtha, source=src_cell)
+    net.add_connection(src_cell, target_cell, loc, receptor, weight, delay, lamtha)
 
     src_cell = "L2_basket"
     lamtha = 20.0
@@ -256,7 +255,7 @@ def neymotin_2020_model(
     weight = net._params[key]
     loc = "soma"
     receptor = "gabaa"
-    net.add_connection(src_cell, target_cell, loc, receptor, weight, delay, lamtha, source=src_cell)
+    net.add_connection(src_cell, target_cell, loc, receptor, weight, delay, lamtha)
 
     # xx -> layer5 Basket
     src_cell = "L5_basket"
@@ -274,7 +273,6 @@ def neymotin_2020_model(
         weight,
         delay,
         lamtha,
-        source=src_cell,
         allow_autapses=False,
     )
 
@@ -284,7 +282,7 @@ def neymotin_2020_model(
     weight = net._params[key]
     loc = "soma"
     receptor = "ampa"
-    net.add_connection(src_cell, target_cell, loc, receptor, weight, delay, lamtha, source=src_cell)
+    net.add_connection(src_cell, target_cell, loc, receptor, weight, delay, lamtha,)
 
     src_cell = "L2_pyramidal"
     lamtha = 3.0
@@ -292,7 +290,7 @@ def neymotin_2020_model(
     weight = net._params[key]
     loc = "soma"
     receptor = "ampa"
-    net.add_connection(src_cell, target_cell, loc, receptor, weight, delay, lamtha,source=src_cell)
+    net.add_connection(src_cell, target_cell, loc, receptor, weight, delay, lamtha,)
 
     return net
 

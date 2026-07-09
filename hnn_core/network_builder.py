@@ -553,7 +553,6 @@ class NetworkBuilder(object):
                     # get synapse locations( now we modify it as we use synapse_tree)
                     syn_keys = list()
                     if self.net.orignal_synapse_creation:
-                        
                         # Targeting group of sections like proximal or distal
                         if loc in target_cell.sect_loc:
                             for sect in target_cell.sect_loc[loc]:
@@ -563,8 +562,12 @@ class NetworkBuilder(object):
                             syn_keys = [f"{loc}_{receptor}"]
                     else:
                         syn_tree = self.net.synapse_trees[target_gid]
-                        for sec_name, seg_dict in syn_tree.items():
-                            for segment, receptor_dict in seg_dict.items():
+                        if loc in target_cell.sect_loc:
+                            valid_sections = target_cell.sect_loc[loc]
+                        else:
+                            valid_sections = [loc]
+                        for sec_name in valid_sections:
+                            for segment, receptor_dict in syn_tree[sec_name].items():
                                 if receptor in receptor_dict and src_type in receptor_dict[receptor]:
                                     syn_keys.append(f"{sec_name}_{segment}_{receptor}_{src_type}")
 

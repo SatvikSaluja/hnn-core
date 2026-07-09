@@ -1425,7 +1425,6 @@ class Network:
                         weight=weights,
                         delay=delays,
                         lamtha=space_constant,
-                        source=name,
                         probability=probability,
                         conn_seed=drive["conn_seed"] + seed_increment,
                     )
@@ -1692,12 +1691,10 @@ class Network:
         return _gid_to_type(gid, self.gid_ranges)
     
     def build_synapse_tree(self):
-        max_gid = 270# did as was facing bug
-        #for conn in self.connectivity:
-        #    for target_gid in conn['target_gids']:
-        #        max_gid = max(max_gid, target_gid)
-
-        synapse_trees = [dict() for _ in range(max_gid)]
+        max_gid = 0
+        for gid_range in self.gid_ranges.values():
+            max_gid = max(max_gid, max(gid_range))
+        synapse_trees = [dict() for _ in range(max_gid+1)]
 
         for conn in self.connectivity:
             src_type = conn['src_type']
@@ -1736,7 +1733,6 @@ class Network:
         weight,
         delay,
         lamtha,
-        source,
         threshold=None,
         gain=1.0,
         allow_autapses=True,
@@ -1848,7 +1844,6 @@ class Network:
         conn["target_type"] = target_type
         conn["target_gids"] = target_set
         conn["num_targets"] = len(target_set)
-        conn["source"]=source
 
         if len(target_gids) != len(src_gids):
             raise AssertionError("target_gids must have a list for each src.")
