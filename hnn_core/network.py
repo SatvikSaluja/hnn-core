@@ -482,7 +482,7 @@ class Network:
         self.connectivity = list()
         self.threshold = self._params["threshold"]
         self.delay = 1.0
-
+        self._synapse_trees = None
         # extracellular recordings (if applicable)
         self.rec_arrays = dict()
 
@@ -1721,7 +1721,7 @@ class Network:
                     if src_type not in tree[sec_name][segment][receptor]:
                         tree[sec_name][segment][receptor].append(src_type)
 
-        self.synapse_trees = synapse_trees
+        self._synapse_trees = synapse_trees
         return synapse_trees
 
     def add_connection(
@@ -1927,11 +1927,6 @@ class Network:
         conn["probability"] = probability
         conn["allow_autapses"] = allow_autapses
         self.connectivity.append(deepcopy(conn))
-        #i had earlier tried to call build_synapse_trees before line 1934 but it couldnt access connectivity, so it is always accesed after net.connectivity is incremented filled
-        if(not(self.orignal_synapse_creation)):
-            self.build_synapse_tree()
-        else:
-            self.synapse_trees=None
 
     def clear_connectivity(self):
         """Remove all connections defined in Network.connectivity"""
@@ -2292,6 +2287,12 @@ class Network:
             )
 
         return standardized_data, n_drive_cells, source_to_gid_map
+    
+    @property
+    def synapse_trees(self):
+        if self._synapse_trees is None:
+            self.build_synapse_tree()
+        return self._synapse_trees
 
 
 class _Connectivity(dict):
