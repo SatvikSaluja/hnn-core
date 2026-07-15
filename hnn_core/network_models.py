@@ -72,6 +72,7 @@ def neymotin_2020_model(
     legacy_mode=False,
     mesh_shape=(10, 10),
     orignal_synapse_creation=True,
+    big_synapse_tree=None,
 ):
     """Instantiate the network model described in Neymotin et al. 2020
 
@@ -291,7 +292,19 @@ def neymotin_2020_model(
     loc = "soma"
     receptor = "ampa"
     net.add_connection(src_cell, target_cell, loc, receptor, weight, delay, lamtha,)
-
+    
+    if big_synapse_tree is not None:
+        _ = net.synapse_trees
+        #we have basically a big_synapse_tree which maps a cell_type to its synapse_tree 
+        # so key is cell_type and value is cell_type
+        for cell_type, synapse_tree in big_synapse_tree.items():
+        #but we map our synapse_tree to cell_type using gid
+        # meaning each gid -> each synapse_tree. but we just provide a cell_type mapped big_synapse_trees
+            for gid in net.gid_ranges[cell_type]:
+            #so what we do is we first do is loop over cell_type in big_synapse_trees and then for each gid of that cell_type
+            #we just asssing a deep copy of that synapse_tree
+            #this implementaion doesnt allow currently different syanpse_tree for same cell_type.
+                net._synapse_trees[gid] = deepcopy(synapse_tree)
     return net
 
 

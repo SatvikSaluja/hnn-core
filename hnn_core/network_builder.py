@@ -564,13 +564,10 @@ class NetworkBuilder(object):
                         syn_tree = self.net.synapse_trees[target_gid]
                         # Targeting group of sections like proximal or distal
                         if loc in target_cell.sect_loc:
-                            for sec_name in target_cell.sect_loc[loc]:
-                                for segment, receptor_dict in syn_tree[sec_name].items():
-                                    if receptor in receptor_dict and src_type in receptor_dict[receptor]:
-                                        syn_keys.append(f"{sec_name}_{segment}_{receptor}_{src_type}")
-                        # Targeting individual section like soma or apical_tuft
+                            valid_sections = target_cell.sect_loc[loc]
                         else:
-                            sec_name = loc
+                            valid_sections = [loc]
+                        for sec_name in valid_sections:
                             for segment, receptor_dict in syn_tree[sec_name].items():
                                 if receptor in receptor_dict and src_type in receptor_dict[receptor]:
                                     syn_keys.append(f"{sec_name}_{segment}_{receptor}_{src_type}")
