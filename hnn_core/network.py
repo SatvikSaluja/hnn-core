@@ -1991,10 +1991,11 @@ class Network:
         conn["allow_autapses"] = allow_autapses
         self.connectivity.append(deepcopy(conn))
 
-        if self.orignal_synapse_creation is not None and self.big_synapse_tree is None:
-            self.build_synapse_tree()
-        elif self.big_synapse_tree is not None:
-            self.build_synapse_tree_from_big_synapse_tree()
+        if not self.orignal_synapse_creation:
+            if self.big_synapse_tree is not None:
+                self.build_synapse_tree_from_big_synapse_tree()
+            else:
+                self.build_synapse_tree()
 
     def clear_connectivity(self):
         """Remove all connections defined in Network.connectivity"""
