@@ -293,7 +293,12 @@ def neymotin_2020_model(
     receptor = "ampa"
     net.add_connection(src_cell, target_cell, loc, receptor, weight, delay, lamtha,)
     
-    net.build_synapse_tree_from_big_synapse_tree()
+    if not net.orignal_synapse_creation and net.big_synapse_tree is not None:
+        max_gid = max(max(r) for r in net.gid_ranges.values())
+        net.synapse_trees = [dict() for _ in range(max_gid + 1)]
+        for cell_type, synapse_tree in net.big_synapse_tree.items():
+            for gid in net.gid_ranges[cell_type]:
+                net.synapse_trees[gid] = deepcopy(synapse_tree)
     return net
 
 

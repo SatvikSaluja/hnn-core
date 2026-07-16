@@ -1723,69 +1723,27 @@ class Network:
                     if src_type not in tree[sec_name][segment][receptor]:
                         tree[sec_name][segment][receptor].append(src_type)
 
-        self._synapse_trees = synapse_trees
+        self.synapse_trees = synapse_trees
         return synapse_trees
 
-    def build_synapse_tree_from_big_synapse_tree(self):
-        if not self.orignal_synapse_creation:
-        #this line is checking whether , we want to build using synapse_trees or not
-        #orignal_synapse_creation = True -> means the regular synapse_creation (what currently happens in main. loops over section and segments and creates synapses)
-        #oringal_synapse_creation = False -> means synapse_creation by looping over synapse_tree
-        # this line will only proceed if orignal_synapse_creation is False, meaning we only make synapse_tree if we need it 
-            if self.big_synapse_tree:
-            #this line above is checkign whether the user has given input of big_synapse_trees.
-            #the inter-network connectivity is given by the user in big_synapse_trees. However , it is not getting filled up 
-            # by connectivity. When this parameter is None , it fills up automatically . So, to prevent adding external_drive twice
-            # when parameter is None , we fill it up only when it is not None
+    def _add_drive_to_synapse_tree(self, conn):
+        src_type = conn['src_type']
+        target_type = conn['target_type']
+        loc = conn['loc']
+        receptor = conn['receptor']
 
-                # self.synapse_trees may not be allocated yet (still None) on the
-                # very first call, so make sure it's a properly-sized list before
-                # we start indexing into it below
-                if self.synapse_trees is None:
-                    max_gid = 0
-                    for gid_range in self.gid_ranges.values():
-                        max_gid = max(max_gid, max(gid_range))
-                    self.synapse_trees = [dict() for _ in range(max_gid+1)]
+        target_cell = self.cell_types[target_type]['cell_object']
+        valid_sections = ['soma'] if loc == 'soma' else target_cell.sect_loc[loc]
+        segment = 0.5
 
-                conn = self.connectivity[-1]
-                # self.connectivity is a list (appended to by add_connection each time),
-                # so we need the connection that was just added, not the whole list
-                if conn["src_type"] in self.cell_types: 
-                    #we have basically a big_synapse_tree which maps a cell_type to its synapse_tree 
-                    # so key is cell_type and value is cell_type
-                    for cell_type, synapse_tree in self.big_synapse_tree.items():
-                    #but we map our synapse_tree to cell_type using gid
-                    # meaning each gid -> each synapse_tree. but we just provide a cell_type mapped big_synapse_trees
-                        for gid in self.gid_ranges[cell_type]:
-                        #so what we do is we first do is loop over cell_type in big_synapse_trees and then for each gid of that cell_type
-                        #we just asssing a deep copy of that synapse_tree
-                        #this implementaion doesnt allow currently different syanpse_tree for same cell_type.
-                            self.synapse_trees[gid] = deepcopy(synapse_tree)
-                else:    
-                # we already have a normal synapse_tree,
-                    # we only need to build for when its a external drive.
-                    src_type = conn['src_type']
-                    target_type = conn['target_type']
-                    loc = conn['loc']
-                    receptor = conn['receptor']
-
-                    target_cell = self.cell_types[target_type]['cell_object']
-
-                    if loc == 'soma':
-                        valid_sections = ['soma']
-                    else:
-                        valid_sections = target_cell.sect_loc[loc]
-
-                    segment = 0.5
-
-                    for target_gid in conn['target_gids']:
-                        tree = self.synapse_trees[target_gid]
-                        for sec_name in valid_sections:
-                            tree.setdefault(sec_name, {})
-                            tree[sec_name].setdefault(segment, {})
-                            tree[sec_name][segment].setdefault(receptor, [])
-                            if src_type not in tree[sec_name][segment][receptor]:
-                                tree[sec_name][segment][receptor].append(src_type)
+        for target_gid in conn['target_gids']:
+            tree = self.synapse_trees[target_gid]
+            for sec_name in valid_sections:
+                tree.setdefault(sec_name, {})
+                tree[sec_name].setdefault(segment, {})
+                tree[sec_name][segment].setdefault(receptor, [])
+                if src_type not in tree[sec_name][segment][receptor]:
+                    tree[sec_name][segment][receptor].append(src_type)
 
     def add_connection(
         self,
@@ -1993,7 +1951,8 @@ class Network:
 
         if not self.orignal_synapse_creation:
             if self.big_synapse_tree is not None:
-                self.build_synapse_tree_from_big_synapse_tree()
+                if conn["src_type"] not in self.cell_types:
+                    self._add_drive_to_synapse_tree(conn)
             else:
                 self.build_synapse_tree()
 
