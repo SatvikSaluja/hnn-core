@@ -1737,14 +1737,22 @@ class Network:
             #the inter-network connectivity is given by the user in big_synapse_trees. However , it is not getting filled up 
             # by connectivity. When this parameter is None , it fills up automatically . So, to prevent adding external_drive twice
             # when parameter is None , we fill it up only when it is not None
-                conn=self.connectivity
-                if conn["src_type"] in self.cell_types: 
-                    #we have basically a big_synapse_tree which maps a cell_type to its synapse_tree 
-                    # so key is cell_type and value is cell_type
+
+                # self.synapse_trees may not be allocated yet (still None) on the
+                # very first call, so make sure it's a properly-sized list before
+                # we start indexing into it below
+                if self.synapse_trees is None:
                     max_gid = 0
                     for gid_range in self.gid_ranges.values():
                         max_gid = max(max_gid, max(gid_range))
-                    synapse_trees = [dict() for _ in range(max_gid+1)]
+                    self.synapse_trees = [dict() for _ in range(max_gid+1)]
+
+                conn = self.connectivity[-1]
+                # self.connectivity is a list (appended to by add_connection each time),
+                # so we need the connection that was just added, not the whole list
+                if conn["src_type"] in self.cell_types: 
+                    #we have basically a big_synapse_tree which maps a cell_type to its synapse_tree 
+                    # so key is cell_type and value is cell_type
                     for cell_type, synapse_tree in self.big_synapse_tree.items():
                     #but we map our synapse_tree to cell_type using gid
                     # meaning each gid -> each synapse_tree. but we just provide a cell_type mapped big_synapse_trees
@@ -1778,7 +1786,7 @@ class Network:
                             tree[sec_name][segment].setdefault(receptor, [])
                             if src_type not in tree[sec_name][segment][receptor]:
                                 tree[sec_name][segment][receptor].append(src_type)
-                
+
     def add_connection(
         self,
         src_gids,
@@ -1985,6 +1993,8 @@ class Network:
 
         if self.orignal_synapse_creation is not None and self.big_synapse_tree is None:
             self.build_synapse_tree()
+        elif self.big_synapse_tree is not None:
+            self.build_synapse_tree_from_big_synapse_tree()
 
     def clear_connectivity(self):
         """Remove all connections defined in Network.connectivity"""
