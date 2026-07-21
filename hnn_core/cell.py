@@ -619,10 +619,12 @@ class Cell:
 
     def _create_synapses_using_synapse_trees(self, syn_tree_gid):
         """Create synapses."""
+        from hnn_core import simple
         for sec_name in syn_tree_gid:
             for segment in syn_tree_gid[sec_name]:
                 for receptor in syn_tree_gid[sec_name][segment]:
                     for source in syn_tree_gid[sec_name][segment][receptor]:
+                        simple.total+=1
                         syn_key = f"{sec_name}_{segment}_{receptor}_{source}"
                         seg = self._nrn_sections[sec_name](segment)
                         self._nrn_synapses[syn_key] = self.syn_create(seg, **self.synapses[receptor])

@@ -446,6 +446,7 @@ class Network:
         cell_types=None,
         orignal_synapse_creation=True,
         big_synapse_tree=None
+        #user_synapse_tree=None,
     ):
         # Save the parameters used to create the Network
         _validate_type(params, dict, "params")
@@ -484,7 +485,7 @@ class Network:
         self.threshold = self._params["threshold"]
         self.delay = 1.0
         self.synapse_trees = None
-        self.big_synapse_tree=big_synapse_tree
+        #self.user_synapse_tree=user_synapse_tree
         # extracellular recordings (if applicable)
         self.rec_arrays = dict()
 
@@ -502,6 +503,14 @@ class Network:
             raise ValueError(
                 f"mesh_shape must be a tuple of positive integers, got: {mesh_shape}"
             )
+        '''
+        if user_synapse_tree is None:
+            self.orignal_synapse_creation = True
+            self.build_from_user_tree = False
+        else:
+            self.orignal_synapse_creation = False
+            self.build_from_user_tree = True
+            '''
 
         self._N_pyr_x = mesh_shape[0]
         self._N_pyr_y = mesh_shape[1]
@@ -1947,14 +1956,14 @@ class Network:
             _connection_probability(conn, probability, conn_seed)
         conn["probability"] = probability
         conn["allow_autapses"] = allow_autapses
-        self.connectivity.append(deepcopy(conn))
+        self.connectivity.append(deepcopy(conn))       
 
         if not self.orignal_synapse_creation:
             if self.big_synapse_tree is not None:
                 if conn["src_type"] not in self.cell_types:
                     self._add_drive_to_synapse_tree(conn)
             else:
-                self.build_synapse_tree()
+                self.build_synapse_tree() 
 
     def clear_connectivity(self):
         """Remove all connections defined in Network.connectivity"""
