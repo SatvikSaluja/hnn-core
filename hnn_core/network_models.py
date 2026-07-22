@@ -71,9 +71,7 @@ def neymotin_2020_model(
     add_drives_from_params=False,
     legacy_mode=False,
     mesh_shape=(10, 10),    
-    orignal_synapse_creation=True,
-    big_synapse_tree=None,
-    #user_synapse_tree=None,
+    synapse_tree=None,
 ):
     """Instantiate the network model described in Neymotin et al. 2020
 
@@ -175,9 +173,7 @@ def neymotin_2020_model(
         mesh_shape=mesh_shape,
         pos_dict=pos_dict,
         cell_types=cell_types,
-        orignal_synapse_creation=orignal_synapse_creation,
-        big_synapse_tree=big_synapse_tree,
-        #user_synapse_tree=user_synapse_tree,
+        synapse_tree=synapse_tree,
     )    
     delay = net.delay
 
@@ -295,28 +291,10 @@ def neymotin_2020_model(
     receptor = "ampa"
     net.add_connection(src_cell, target_cell, loc, receptor, weight, delay, lamtha,)
 
-    if not net.orignal_synapse_creation and net.big_synapse_tree is not None:
-        max_gid = max(max(r) for r in net.gid_ranges.values())
-        net.synapse_trees = [dict() for _ in range(max_gid + 1)]
-        for cell_type, synapse_tree in net.big_synapse_tree.items():
-            for gid in net.gid_ranges[cell_type]:
-                net.synapse_trees[gid] = deepcopy(synapse_tree)
-    '''
-    if net.build_from_user_tree: #this will be true in case we pass a True and in case we pass a dictionary of synapse_trees
-        if isinstance(net.user_synapse_tree, dict): #this will only pass if we pass a dictionary
-            # user will supply a dictionary mapped with synapse_tree— map it onto every gid of each cell_type
-            max_gid = max(max(r) for r in net.gid_ranges.values())
-            net.synapse_trees = [dict() for _ in range(max_gid + 1)]
-            for cell_type, synapse_tree in net.user_synapse_tree.items():
-                for gid in net.gid_ranges[cell_type]:
-                    net.synapse_trees[gid] = deepcopy(synapse_tree)
-        else: # user_synapse_tree is True — build it from connectivity
-            net.synapse_trees = net.build_synapse_tree()
-    else:
-        # original way — build the tree afterward anyway, so
-        # net.synapse_tree is always filled inspite of path choosen
-        net.synapse_trees = net.build_synapse_tree()
-        '''
+    if synapse_tree =='default':
+        net.build_synapse_trees()
+    elif isinstance(synapse_tree, dict):
+        net.build_synapse_trees_using_input_tree()
 
     return net
 

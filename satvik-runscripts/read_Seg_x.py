@@ -2,156 +2,72 @@ from collections import defaultdict
 from hnn_core import neymotin_2020_model
 from hnn_core.network_builder import NetworkBuilder
 
-big_synapse_tree = {
+synapse_tree = {
     "L2_basket": {
-        "soma": {
-            0.1: {
-                "ampa": ["L2_pyramidal"],
-                "gabaa": ["L2_basket"]
-            },
-            0.99: {
-                "ampa": ["L2_pyramidal"],
-                "gabaa": ["L2_basket"]
-            }
+        "L2_pyramidal": {
+            "soma": {"ampa": [0.1]}
+        },
+        "L2_basket": {
+            "soma": {"gabaa": [0.1]}
         }
     },
 
     "L2_pyramidal": {
-        "apical_oblique": {
-            0.1: {
-                "nmda": ["L2_pyramidal"],
-                "ampa": ["L2_pyramidal"]
-            },
-            0.99: {
-                "nmda": ["L2_pyramidal"],
-                "ampa": ["L2_pyramidal"]
-            },
-            
+        "L2_pyramidal": {
+            "apical_oblique": {"nmda": [0.1], "ampa": [0.1]},
+            "basal_2":        {"nmda": [0.1], "ampa": [0.1]},
+            "basal_3":        {"nmda": [0.1], "ampa": [0.1]}
         },
-        "basal_2": {
-            0.1: {
-                "nmda": ["L2_pyramidal"],
-                "ampa": ["L2_pyramidal"]
-            },
-            0.99: {
-                "nmda": ["L2_pyramidal"],
-                "ampa": ["L2_pyramidal"]
-            },
-        },
-        "basal_3": {
-            0.1: {
-                "nmda": ["L2_pyramidal"],
-                "ampa": ["L2_pyramidal"]
-            },
-            0.99: {
-                "nmda": ["L2_pyramidal"],
-                "ampa": ["L2_pyramidal"]
-            },
-        },
-        "soma": {
-            0.1: {
-                "gabaa": ["L2_basket"],
-                "gabab": ["L2_basket"]
-            },
-            0.99: {
-                "gabaa": ["L2_basket"],
-                "gabab": ["L2_basket"]
-            }
+        "L2_basket": {
+            "soma": {"gabaa": [0.1], "gabab": [0.1]}
         }
     },
 
     "L5_basket": {
-        "soma": {
-            0.1: {
-                "gabaa": ["L5_basket"],
-                "ampa": ["L5_pyramidal", "L2_pyramidal"]
-            },
-             0.99: {
-                "gabaa": ["L5_basket"],
-                "ampa": ["L5_pyramidal", "L2_pyramidal"]
-            }
-
+        "L5_basket": {
+            "soma": {"gabaa": [0.1]}
+        },
+        "L5_pyramidal": {
+            "soma": {"ampa": [0.1]}
+        },
+        "L2_pyramidal": {
+            "soma": {"ampa": [0.1]}
         }
     },
 
     "L5_pyramidal": {
-        "apical_oblique": {
-            0.1: {
-                "nmda": ["L5_pyramidal"],
-                "ampa": ["L5_pyramidal", "L2_pyramidal"]
-            },
-            0.99: {
-                "nmda": ["L5_pyramidal"],
-                "ampa": ["L5_pyramidal", "L2_pyramidal"]
-            },
+        "L5_pyramidal": {
+            "apical_oblique": {"nmda": [0.1], "ampa": [0.1]},
+            "basal_2":        {"nmda": [0.1], "ampa": [0.1]},
+            "basal_3":        {"nmda": [0.1], "ampa": [0.1]}
         },
-        "basal_2": {
-            0.1: {
-                "nmda": ["L5_pyramidal"],
-                "ampa": ["L5_pyramidal", "L2_pyramidal"]
-            },
-            0.99: {
-                "nmda": ["L5_pyramidal"],
-                "ampa": ["L5_pyramidal", "L2_pyramidal"]
-            }
+        "L2_pyramidal": {
+            "apical_oblique": {"ampa": [0.1]},
+            "basal_2":        {"ampa": [0.1]},
+            "basal_3":        {"ampa": [0.1]},
+            "apical_tuft":    {"ampa": [0.1]}
         },
-        "basal_3": {
-            0.1: {
-                "nmda": ["L5_pyramidal"],
-                "ampa": ["L5_pyramidal", "L2_pyramidal"]
-            },
-            0.99: {
-                "nmda": ["L5_pyramidal"],
-                "ampa": ["L5_pyramidal", "L2_pyramidal"]
-            }
+        "L5_basket": {
+            "soma": {"gabaa": [0.1], "gabab": [0.1]}
         },
-        "soma": {
-            0.1: {
-                "gabaa": ["L5_basket"],
-                "gabab": ["L5_basket"]
-            },
-            0.99: {
-                "gabaa": ["L5_basket"],
-                "gabab": ["L5_basket"]
-            }
-        },
-        "apical_tuft": {
-            0.1: {
-                "ampa": ["L2_pyramidal"],
-                "gabaa": ["L2_basket"]
-            },
-            0.99: {
-                "ampa": ["L2_pyramidal"],
-                "gabaa": ["L2_basket"]
-            }
+        "L2_basket": {
+            "apical_tuft": {"gabaa": [0.1]}
         }
     }
 }
 
+
+
 net = neymotin_2020_model(
-    orignal_synapse_creation=False,
-    big_synapse_tree=big_synapse_tree,
+    synapse_tree=synapse_tree,
 )
-builder = NetworkBuilder(net)
-for cell_type in net.gid_ranges:
-    gid = list(net.gid_ranges[cell_type])[0]
-    cell = builder._cells[gid]
-    cell_secs = set(cell._nrn_sections.values())
+net.add_evoked_drive('evprox', mu=40, sigma=5, numspikes=1,
+    location='proximal',
+    weights_ampa={'L2_pyramidal': 0.01, 'L5_pyramidal': 0.01},
+    synaptic_delays={'L2_pyramidal': 0.1, 'L5_pyramidal': 0.1},)
 
-    print(f"\n{cell_type} (gid {gid}):")
-    seen = set() 
-    for conn_key, ncs in builder.ncs.items():
-        for nc in ncs:
-            seg = nc.syn().get_segment()
-            if seg.sec not in cell_secs:
-                continue
-            sec_name = seg.sec.name().split('.')[-1]
-            loc = round(seg.x, 4)
-            key = (conn_key, sec_name, loc)
-            if key in seen:
-                continue
-            seen.add(key)
-            print(f"  {conn_key}: sec={sec_name}, loc={loc}")
+from hnn_core import simulate_dipole
+dpls=simulate_dipole(net,tstop=30,dt=0.025)
 
-from hnn_core import simple
-print(simple.total)
+
+    

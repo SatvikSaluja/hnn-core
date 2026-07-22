@@ -475,7 +475,7 @@ class NetworkBuilder(object):
                     else:
                         cell.build()
                 else:
-                    syn_tree_gid = self.net.synapse_trees[gid]
+                    syn_tree_gid = self.net.synapse_tree[gid]
                     if src_type_metadata.get("measure_dipole", False):
                         cell.build(syn_tree_gid=syn_tree_gid,sec_name_apical="apical_trunk")
                     else:
@@ -561,16 +561,20 @@ class NetworkBuilder(object):
                         else:
                             syn_keys = [f"{loc}_{receptor}"]
                     else:
-                        syn_tree = self.net.synapse_trees[target_gid]
+                        syn_tree = self.net.synapse_tree[target_gid]
                         # Targeting group of sections like proximal or distal
                         if loc in target_cell.sect_loc:
                             valid_sections = target_cell.sect_loc[loc]
                         else:
                             valid_sections = [loc]
-                        for sec_name in valid_sections:
-                            for segment, receptor_dict in syn_tree[sec_name].items():
-                                if receptor in receptor_dict and src_type in receptor_dict[receptor]:
-                                    syn_keys.append(f"{sec_name}_{segment}_{receptor}_{src_type}")
+                        if src_type in syn_tree:
+                            for sec_name in valid_sections:
+                                if sec_name not in syn_tree[src_type]:
+                                    continue
+                                if receptor not in syn_tree[src_type][sec_name]:
+                                    continue
+                                for segment in syn_tree[src_type][sec_name][receptor]:
+                                    syn_keys.append(f"{src_type}_{sec_name}_{receptor}_{segment}")
 
                     for syn_key in syn_keys:
                         nc = target_cell.parconnect_from_src(

@@ -616,19 +616,14 @@ class Cell:
                 seg = self._nrn_sections[sec_name](0.5)
                 self._nrn_synapses[syn_key] = self.syn_create(seg, **synapses[receptor])
 
-
-    def _create_synapses_using_synapse_trees(self, syn_tree_gid):
-        """Create synapses."""
-        from hnn_core import simple
-        for sec_name in syn_tree_gid:
-            for segment in syn_tree_gid[sec_name]:
-                for receptor in syn_tree_gid[sec_name][segment]:
-                    for source in syn_tree_gid[sec_name][segment][receptor]:
-                        simple.total+=1
-                        syn_key = f"{sec_name}_{segment}_{receptor}_{source}"
+    def create_synapses_using_synapse_trees(self,syn_tree_gid):
+        for source in syn_tree_gid:
+            for sec_name in syn_tree_gid[source]:
+                for receptor in syn_tree_gid[source][sec_name]:
+                    for segment in syn_tree_gid[source][sec_name][receptor]:
+                        syn_key = f"{source}_{sec_name}_{receptor}_{segment}"
                         seg = self._nrn_sections[sec_name](segment)
                         self._nrn_synapses[syn_key] = self.syn_create(seg, **self.synapses[receptor])
-            
 
     def _create_sections(self, sections, cell_tree):
         """Create soma and set geometry.
@@ -699,9 +694,9 @@ class Cell:
         """
         self._create_sections(self.sections, self.cell_tree)
         if(not(syn_tree_gid)):
-            self._create_synapses_orignal(self.sections,self.synapses)
+            self.create_synapses_orignal(self.sections,self.synapses)
         else:
-            self._create_synapses_using_synapse_trees(syn_tree_gid)
+            self.create_synapses_using_synapse_trees(syn_tree_gid)
         self._set_biophysics(self.sections)
         if sec_name_apical in self._nrn_sections:
             self._insert_dipole(sec_name_apical)
