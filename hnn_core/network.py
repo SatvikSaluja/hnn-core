@@ -504,14 +504,7 @@ class Network:
             raise ValueError(
                 f"mesh_shape must be a tuple of positive integers, got: {mesh_shape}"
             )
-        '''
-        if user_synapse_tree is None:
-            self.orignal_synapse_creation = True
-            self.build_from_user_tree = False
-        else:
-            self.orignal_synapse_creation = False
-            self.build_from_user_tree = True
-            '''
+
 
         self._N_pyr_x = mesh_shape[0]
         self._N_pyr_y = mesh_shape[1]
