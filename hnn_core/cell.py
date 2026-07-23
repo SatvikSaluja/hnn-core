@@ -608,7 +608,7 @@ class Cell:
                         p_mech[attr] = [seg_xs, seg_vals]
         return self.sections
     
-    def _create_synapses_orignal(self, sections, synapses):
+    def create_synapses_orignal(self, sections, synapses):
         """Create synapses."""
         for sec_name in sections:
             for receptor in sections[sec_name].syns:
@@ -620,10 +620,37 @@ class Cell:
         for source in syn_tree_gid:
             for sec_name in syn_tree_gid[source]:
                 for receptor in syn_tree_gid[source][sec_name]:
-                    for segment in syn_tree_gid[source][sec_name][receptor]:
+                    #the reason why i was in favour of this synapse_tree strucutre
+                    #was as is we can just read the input_locations and make the synapse
+                    #. after that we can just update the keys and in the same way update 
+                    # the syanpse_tree strucutre
+
+                    #earlier it would have been difficult as we have to change a key but with new synapse_tree stucture , we will modify value
+                    
+                    #now what we just do is first store the list of all the segments the connection is targetting
+                    #after that we create the synpase using syn_create . after that we jsut read from the NEURON object returned
+                    # and read from it
+                    input_locations=syn_tree_gid[source][sec_name][receptor]
+                    actual_locations=[]
+                    for segment in input_locations:
                         syn_key = f"{source}_{sec_name}_{receptor}_{segment}"
                         seg = self._nrn_sections[sec_name](segment)
-                        self._nrn_synapses[syn_key] = self.syn_create(seg, **self.synapses[receptor])
+                        # at this point i realised that not only we have to fix the synapse_tree structure that contains the wrong
+                        # values of the segment , but also the synapse_keys which denote the segment location .
+        
+                        # how do we access the synapse location
+                        # that value is stored in stored in the NEURON object that is returned by the function syn_create
+                        # to take info from that we first create it seperaetly 
+                        seg = self._nrn_sections[sec_name](segment)
+                        syn = self.syn_create(seg, **self.synapses[receptor])
+                        actual_loc = syn.get_segment().x
+                        actual_locations.append(actual_loc)
+                        syn_key = f"{source}_{sec_name}_{receptor}_{actual_loc}"
+                        print(syn_key)
+                        self._nrn_synapses[syn_key] = syn
+
+                    syn_tree_gid[source][sec_name][receptor] = actual_locations
+
 
     def _create_sections(self, sections, cell_tree):
         """Create soma and set geometry.

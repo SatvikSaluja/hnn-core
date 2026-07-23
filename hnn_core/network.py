@@ -11,7 +11,6 @@ import itertools as it
 from copy import deepcopy
 from collections import OrderedDict, defaultdict
 from typing import Dict
-import copy
 import numpy as np
 import warnings
 
@@ -1754,7 +1753,7 @@ class Network:
             if target_type not in self.gid_ranges:
                 continue
             for target_gid in self.gid_ranges[target_type]:
-                self.synapse_tree[target_gid] = copy.deepcopy(subtree)
+                self.synapse_tree[target_gid] = deepcopy(subtree)
         
 
     def add_connection(

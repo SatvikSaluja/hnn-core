@@ -5,53 +5,53 @@ from hnn_core.network_builder import NetworkBuilder
 synapse_tree = {
     "L2_basket": {
         "L2_pyramidal": {
-            "soma": {"ampa": [0.1]}
+            "soma": {"ampa": [0.99]}
         },
         "L2_basket": {
-            "soma": {"gabaa": [0.1]}
+            "soma": {"gabaa": [0.99]}
         }
     },
 
     "L2_pyramidal": {
         "L2_pyramidal": {
-            "apical_oblique": {"nmda": [0.1], "ampa": [0.1]},
-            "basal_2":        {"nmda": [0.1], "ampa": [0.1]},
-            "basal_3":        {"nmda": [0.1], "ampa": [0.1]}
+            "apical_oblique": {"nmda": [0.9], "ampa": [0.9]},
+            "basal_2":        {"nmda": [0.9], "ampa": [0.9]},
+            "basal_3":        {"nmda": [0.9], "ampa": [0.9]}
         },
         "L2_basket": {
-            "soma": {"gabaa": [0.1], "gabab": [0.1]}
+            "soma": {"gabaa": [0.9], "gabab": [0.9]}
         }
     },
 
     "L5_basket": {
         "L5_basket": {
-            "soma": {"gabaa": [0.1]}
+            "soma": {"gabaa": [0.9]}
         },
         "L5_pyramidal": {
-            "soma": {"ampa": [0.1]}
+            "soma": {"ampa": [0.9]}
         },
         "L2_pyramidal": {
-            "soma": {"ampa": [0.1]}
+            "soma": {"ampa": [0.9]}
         }
     },
 
     "L5_pyramidal": {
         "L5_pyramidal": {
-            "apical_oblique": {"nmda": [0.1], "ampa": [0.1]},
-            "basal_2":        {"nmda": [0.1], "ampa": [0.1]},
-            "basal_3":        {"nmda": [0.1], "ampa": [0.1]}
+            "apical_oblique": {"nmda": [0.9], "ampa": [0.9]},
+            "basal_2":        {"nmda": [0.9], "ampa": [0.9]},
+            "basal_3":        {"nmda": [0.9], "ampa": [0.9]}
         },
         "L2_pyramidal": {
-            "apical_oblique": {"ampa": [0.1]},
-            "basal_2":        {"ampa": [0.1]},
-            "basal_3":        {"ampa": [0.1]},
-            "apical_tuft":    {"ampa": [0.1]}
+            "apical_oblique": {"ampa": [0.9]},
+            "basal_2":        {"ampa": [0.9]},
+            "basal_3":        {"ampa": [0.9]},
+            "apical_tuft":    {"ampa": [0.9]}
         },
         "L5_basket": {
-            "soma": {"gabaa": [0.1], "gabab": [0.1]}
+            "soma": {"gabaa": [0.9], "gabab": [0.9]}
         },
         "L2_basket": {
-            "apical_tuft": {"gabaa": [0.1]}
+            "apical_tuft": {"gabaa": [0.9]}
         }
     }
 }
@@ -67,7 +67,11 @@ net.add_evoked_drive('evprox', mu=40, sigma=5, numspikes=1,
     synaptic_delays={'L2_pyramidal': 0.1, 'L5_pyramidal': 0.1},)
 
 from hnn_core import simulate_dipole
-dpls=simulate_dipole(net,tstop=30,dt=0.025)
+dpls=simulate_dipole(net,tstop=1,dt=0.025)
+
+print(net.synapse_tree[170])
+print('\n')
+print('\n')
+print(net.synapse_tree[35])
 
 
-    
