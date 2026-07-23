@@ -646,7 +646,6 @@ class Cell:
                         actual_loc = syn.get_segment().x
                         actual_locations.append(actual_loc)
                         syn_key = f"{source}_{sec_name}_{receptor}_{actual_loc}"
-                        print(syn_key)
                         self._nrn_synapses[syn_key] = syn
 
                     syn_tree_gid[source][sec_name][receptor] = actual_locations
