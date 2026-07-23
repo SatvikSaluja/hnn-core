@@ -1697,7 +1697,7 @@ class Network:
     def build_synapse_trees(self,flag=False):
         """
         this function will build/update synapse_trees .
-        we have to differntiate as we want to ensure synapse_trees also update when we add an external drive . 
+        we have to differentiate as we want to ensure synapse_trees also update when we add an external drive . 
         Just calling in network_models after all 16 connections ,will append all the
         network connections.
         But external drives are called after that . 
@@ -1705,7 +1705,7 @@ class Network:
         this function will be called in three cases ->
         
         1, during network building time
-        2. during external drive additon time
+        2. during external drive addition time
 
         the 1st case, will be called after all 16 connection are added in network_models ->    flag= False
 
