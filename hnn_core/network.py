@@ -482,9 +482,8 @@ class Network:
         self.delay = 1.0
         self.synapse_tree_input=synapse_tree
         self.synapse_tree=None
-        self.orignal_synapse_creation=False
-        if self.synapse_tree_input =='default':
-            self.orignal_synapse_creation=True
+        self.original_synapse_creation = self.synapse_tree_input in (None, "default")
+        self._building_synapse_trees = False
         
         # extracellular recordings (if applicable)
         self.rec_arrays = dict()
@@ -1694,13 +1693,13 @@ class Network:
         """Reverse lookup of gid to type."""
         return _gid_to_type(gid, self.gid_ranges)
     
-    def build_synapse_trees(self,flag=False):
+    def build_synapse_trees(self):
         """
         this function will build/update synapse_trees .
-        we have to differentiate as we want to ensure synapse_trees also update when we add an external drive . 
+        Currently we dont need to  to differentiate as we want to ensure synapse_trees also update when we add an external drive . 
         Just calling in network_models after all 16 connections ,will append all the
         network connections.
-        But external drives are called after that . 
+        However this remains redundant for case 2 as it build synapse_trees 
         
         this function will be called in three cases ->
         
@@ -1719,13 +1718,12 @@ class Network:
 
         Currently 3rd and 4th not accounted for 
         """
-        start_conn = 0
-        if flag is True:
-            start_conn = len(self.connectivity) - 1
-        else:
-            # first full build -- allocate one dict per gid
+        if self.synapse_tree is None:
             max_gid = max(max(r) for r in self.gid_ranges.values())
             self.synapse_tree = [dict() for _ in range(max_gid + 1)]
+            start_conn = 0
+        else:
+            start_conn = len(self.connectivity) - 1
         for conn in self.connectivity[start_conn:]:
             src_type = conn["src_type"]
             target_type = conn["target_type"]
@@ -1735,13 +1733,13 @@ class Network:
             valid_sections = ["soma"] if loc == "soma" else target_cell.sect_loc[loc]
             requested_loc = 0.5  # or your snap/default logic
             for target_gid in conn["target_gids"]:
-                tree = self.synapse_tree[target_gid]
-                tree.setdefault(src_type, {})
+                branch = self.synapse_tree[target_gid]
+                branch.setdefault(src_type, {})
+                branch[src_type].setdefault(receptor, {})
                 for sec_name in valid_sections:
-                    tree[src_type].setdefault(sec_name, {})
-                    tree[src_type][sec_name].setdefault(receptor, [])
-                    if requested_loc not in tree[src_type][sec_name][receptor]:
-                        tree[src_type][sec_name][receptor].append(requested_loc)
+                    branch[src_type][receptor].setdefault(sec_name, [])
+                    if requested_loc not in branch[src_type][receptor][sec_name]:
+                        branch[src_type][receptor][sec_name].append(requested_loc)
 
     def build_synapse_trees_using_input_tree(self):
         """Expand cell_type keyed synapse tree into gid keyed synapse tree.
@@ -1960,8 +1958,7 @@ class Network:
         conn["allow_autapses"] = allow_autapses
         self.connectivity.append(deepcopy(conn))       
 
-        if conn["src_type"] not in self.cell_types:
-            self.build_synapse_trees(flag=True)
+        self.build_synapse_trees()
 
     def clear_connectivity(self):
         """Remove all connections defined in Network.connectivity"""
