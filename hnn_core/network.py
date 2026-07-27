@@ -1691,7 +1691,7 @@ class Network:
     def gid_to_type(self, gid):
         """Reverse lookup of gid to type."""
         return _gid_to_type(gid, self.gid_ranges)
-    
+    '''
     def build_synapse_trees(self):
         """
         this function will build/update synapse_trees .
@@ -1751,7 +1751,7 @@ class Network:
                 continue
             for target_gid in self.gid_ranges[target_type]:
                 self.synapse_tree[target_gid] = deepcopy(subtree)
-        
+        '''        
 
     def add_connection(
         self,
