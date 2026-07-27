@@ -483,6 +483,8 @@ class Network:
         self.synapse_tree_input=synapse_tree
         self.orignal_synapse_creation = (synapse_tree is None)
         self.synapse_tree=None
+        #synapse_tree only fills after NetworkBuilder time . Before NetworkBuilder time , we can access the new template_synapse_tree Austin was talking about
+        # template_synapse_tree yet to implement
         
         # extracellular recordings (if applicable)
         self.rec_arrays = dict()

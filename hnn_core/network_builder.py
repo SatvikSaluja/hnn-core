@@ -397,7 +397,7 @@ class NetworkBuilder(object):
 
         Case 1 -> if self.net.synapse_tree_input is None or 'default; -> then it will make
                     from reading the net.connectivity list
-        Case 2- > if self.net.synapse_tree_input is an instance of dictioanry (this dictionary 
+        Case 2- > if self.net.synapse_tree_input is an instance of dictionary (this dictionary 
         can be either taken as an input or as Austin said , this is the template_synapse_tree Austin
         was referring about) -> then the synapse_trees will be made according to this input 
         '''
