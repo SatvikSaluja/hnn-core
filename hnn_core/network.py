@@ -481,9 +481,8 @@ class Network:
         self.threshold = self._params["threshold"]
         self.delay = 1.0
         self.synapse_tree_input=synapse_tree
+        self.orignal_synapse_creation = (synapse_tree is None)
         self.synapse_tree=None
-        self.original_synapse_creation = self.synapse_tree_input in (None, "default")
-        self._building_synapse_trees = False
         
         # extracellular recordings (if applicable)
         self.rec_arrays = dict()
@@ -1958,7 +1957,6 @@ class Network:
         conn["allow_autapses"] = allow_autapses
         self.connectivity.append(deepcopy(conn))       
 
-        self.build_synapse_trees()
 
     def clear_connectivity(self):
         """Remove all connections defined in Network.connectivity"""

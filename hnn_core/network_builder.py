@@ -338,8 +338,9 @@ class NetworkBuilder(object):
             self._expose_imem = True
 
         self._rank = 0
-
+        self._build_exact_synapse_tree()
         self._build()
+        
 
     def _build(self):
         """Building the network in NEURON."""
@@ -389,6 +390,57 @@ class NetworkBuilder(object):
 
         if self._rank == 0 and self.net._verbose:
             print("[Done]")
+    def _build_exact_synapse_tree(self):
+        '''
+        This function is almost similar to what i did in network.py . This function
+        will be responsible for both cases
+
+        Case 1 -> if self.net.synapse_tree_input is None or 'default; -> then it will make
+                    from reading the net.connectivity list
+        Case 2- > if self.net.synapse_tree_input is an instance of dictioanry (this dictionary 
+        can be either taken as an input or as Austin said , this is the template_synapse_tree Austin
+        was referring about) -> then the synapse_trees will be made according to this input 
+        '''
+        net=self.net
+        max_gid = max(max(r) for r in net.gid_ranges.values())
+        tree = [dict() for _ in range(max_gid + 1)]
+
+        #case 2 
+        if isinstance(net.synapse_tree_input, dict):
+            for target_type, subtree in net.synapse_tree_input.items():
+                if target_type not in net.gid_ranges:
+                    continue
+                for target_gid in net.gid_ranges[target_type]:
+                    tree[target_gid] = deepcopy(subtree)
+            net.synapse_tree = tree
+            return
+        
+        else:# case 1 
+            for conn in net.connectivity:
+                src_type = conn["src_type"]
+                target_type = conn["target_type"]
+                loc = conn["loc"]
+                receptor = conn["receptor"]
+                target_cell = net.cell_types[target_type]["cell_object"]
+
+                if loc in target_cell.sect_loc:
+                    valid_sections = target_cell.sect_loc[loc]
+                else:
+                    valid_sections = [loc]
+
+                requested_loc = 0.5
+
+                for target_gid in conn["target_gids"]:
+                    syn_tree = tree[target_gid]
+                    syn_tree.setdefault(src_type, {})
+                    syn_tree[src_type].setdefault(receptor, {})
+                    for sec_name in valid_sections:
+                        syn_tree[src_type][receptor].setdefault(sec_name, [])
+                        if requested_loc not in syn_tree[src_type][receptor][sec_name]:
+                            syn_tree[src_type][receptor][sec_name].append(requested_loc)
+
+            net.synapse_tree = tree
+
 
     def _gid_assign(self, rank=None, n_hosts=None):
         """Assign cell IDs to this node
@@ -475,6 +527,9 @@ class NetworkBuilder(object):
                     else:
                         cell.build()
                 else:
+                    # self.net.synapse_tree is guaranteed to be built by this
+                    # point,as _build_exact_synapse_tree() runs in
+                    # NetworkBuilder.__init__ before this method is called
                     syn_tree_gid = self.net.synapse_tree[gid]
                     if src_type_metadata.get("measure_dipole", False):
                         cell.build(syn_tree_gid=syn_tree_gid,sec_name_apical="apical_trunk")

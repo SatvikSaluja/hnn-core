@@ -291,9 +291,6 @@ def neymotin_2020_model(
     receptor = "ampa"
     net.add_connection(src_cell, target_cell, loc, receptor, weight, delay, lamtha,)
 
-    if isinstance(synapse_tree, dict):
-        net.build_synapse_trees_using_input_tree()
-
     return net
 
 
