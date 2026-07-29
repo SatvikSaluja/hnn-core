@@ -413,6 +413,36 @@ class NetworkBuilder(object):
                 for target_gid in net.gid_ranges[target_type]:
                     tree[target_gid] = deepcopy(subtree)
             net.synapse_tree = tree
+
+        #we loop over connectivty
+            for conn in net.connectivity:
+                src_type = conn["src_type"]
+                #we just check the source types
+                #and see if it not net.cell_types ( meaning it's a drive (not L2_pyr,L5_pyr,L2_basket,L5_basket))
+                if src_type not in net.cell_types:
+                    #then it is the same loop as we had done below in case 1
+                    target_type = conn["target_type"]
+                    loc = conn["loc"]
+                    receptor = conn["receptor"]
+                    target_cell = net.cell_types[target_type]["cell_object"]
+
+                    if loc in target_cell.sect_loc:
+                        valid_sections = target_cell.sect_loc[loc]
+                    else:
+                        valid_sections = [loc]
+
+                    requested_loc = 0.5
+
+                    for target_gid in conn["target_gids"]:
+                        syn_tree = tree[target_gid]
+                        syn_tree.setdefault(src_type, {})
+                        syn_tree[src_type].setdefault(receptor, {})
+                        for sec_name in valid_sections:
+                            syn_tree[src_type][receptor].setdefault(sec_name, [])
+                            if requested_loc not in syn_tree[src_type][receptor][sec_name]:
+                                syn_tree[src_type][receptor][sec_name].append(requested_loc)
+
+            net.synapse_tree = tree
             return
         
         else:# case 1 

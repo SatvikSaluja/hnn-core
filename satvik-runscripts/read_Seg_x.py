@@ -57,12 +57,16 @@ synapse_tree = {
     }
 }
 
+
+
 from collections import defaultdict
 from hnn_core import neymotin_2020_model
 
 
-net = neymotin_2020_model(synapse_tree=synapse_tree
-)
+net = neymotin_2020_model(synapse_tree=synapse_tree)
+net.add_evoked_drive('evprox', mu=40, sigma=5, numspikes=1,
+    location='proximal',
+    weights_ampa={'L2_pyramidal': 0.01, 'L5_pyramidal': 0.01},)
 
 from hnn_core import simulate_dipole
 dpls=simulate_dipole(net,tstop=1,dt=0.025)
