@@ -1,6 +1,6 @@
 import numpy as np
 from hnn_core import jones_2009_model, simulate_dipole
-
+import pandas as pd
 net_ney = jones_2009_model(orignal_synapse_creation=True)
 
 for conn_idx, conn in enumerate(net_ney.connectivity):
@@ -16,6 +16,7 @@ for conn_idx, conn in enumerate(net_ney.connectivity):
         )
 
     net2 = jones_2009_model(orignal_synapse_creation=False)
+    net2.conn_dataframe = pd.DataFrame()
     net2.clear_connectivity()
     # now create with synapse tree
     for c in net_ney.connectivity[:conn_idx + 1]:
@@ -25,8 +26,14 @@ for conn_idx, conn in enumerate(net_ney.connectivity):
         )
 
     # if just testing intra-network connections, add the same tonic bias
-    net1.add_tonic_bias(cell_type='L2_pyramidal', amplitude=1.0, t0=0, tstop=170)
-    net2.add_tonic_bias(cell_type='L2_pyramidal', amplitude=1.0, t0=0, tstop=170)
+    net1.add_evoked_drive('evprox', mu=40, sigma=5, numspikes=1,
+        location='proximal',
+        weights_ampa={'L2_pyramidal': 0.01, 'L5_pyramidal': 0.01},
+        synaptic_delays={'L2_pyramidal': 0.1, 'L5_pyramidal': 0.1},)
+    net2.add_evoked_drive('evprox',mu=40, sigma=5, numspikes=1,
+        location='proximal',
+        weights_ampa={'L2_pyramidal': 0.01, 'L5_pyramidal': 0.01},
+        synaptic_delays={'L2_pyramidal': 0.1, 'L5_pyramidal': 0.1},)
 
     dpl1 = simulate_dipole(net1, tstop=170, record_vsec='all')
     dpl2 = simulate_dipole(net2, tstop=170, record_vsec='all')

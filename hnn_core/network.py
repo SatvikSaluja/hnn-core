@@ -27,7 +27,8 @@ from .check import _check_gids, _gid_to_type, _string_input_to_list
 from .hnn_io import write_network_configuration, network_to_dict
 from .externals.mne import copy_doc
 from .utils import _replace_dict_identifier
-
+import pandas as pd
+import random
 
 def _create_cell_coords(n_pyr_x, n_pyr_y, z_coord, inplane_distance):
     """Creates coordinate grid and place cells in it.
@@ -443,7 +444,7 @@ class Network:
         mesh_shape=(10, 10),
         pos_dict=None,
         cell_types=None,
-        synapse_tree=None,
+        orignal_synpase_creation=True,
     ):
         # Save the parameters used to create the Network
         _validate_type(params, dict, "params")
@@ -480,11 +481,7 @@ class Network:
         self.connectivity = list()
         self.threshold = self._params["threshold"]
         self.delay = 1.0
-        self.synapse_tree_input=synapse_tree
-        self.orignal_synapse_creation = (synapse_tree is None)
-        self.synapse_tree=None
-        #synapse_tree only fills after NetworkBuilder time . Before NetworkBuilder time , we can access the new template_synapse_tree Austin was talking about
-        # template_synapse_tree yet to implement
+        self.orignal_synapse_creation = orignal_synpase_creation
         
         # extracellular recordings (if applicable)
         self.rec_arrays = dict()
@@ -566,6 +563,7 @@ class Network:
 
         self._tstop = None
         self._dt = None
+        self.conn_dataframe=pd.DataFrame()
 
     def __repr__(self):
         class_name = self.__class__.__name__
@@ -1693,67 +1691,6 @@ class Network:
     def gid_to_type(self, gid):
         """Reverse lookup of gid to type."""
         return _gid_to_type(gid, self.gid_ranges)
-    '''
-    def build_synapse_trees(self):
-        """
-        this function will build/update synapse_trees .
-        Currently we dont need to  to differentiate as we want to ensure synapse_trees also update when we add an external drive . 
-        Just calling in network_models after all 16 connections ,will append all the
-        network connections.
-        However this remains redundant for case 2 as it build synapse_trees 
-        
-        this function will be called in three cases ->
-        
-        1, during network building time
-        2. during external drive addition time
-
-        the 1st case, will be called after all 16 connection are added in network_models ->    flag= False
-
-        the 2nd case , both will be called from add_connection.  -> flag = True
-
-        
-        Some edge cases / things which we should also take into account -> 
-        
-        3. if user adds a new connection in network (i just thought of this edge case . few other edge cases might also exist). 
-        4. if user deletes connections , we have to update synapse_tree 
-
-        Currently 3rd and 4th not accounted for 
-        """
-        if self.synapse_tree is None:
-            max_gid = max(max(r) for r in self.gid_ranges.values())
-            self.synapse_tree = [dict() for _ in range(max_gid + 1)]
-            start_conn = 0
-        else:
-            start_conn = len(self.connectivity) - 1
-        for conn in self.connectivity[start_conn:]:
-            src_type = conn["src_type"]
-            target_type = conn["target_type"]
-            loc = conn["loc"]
-            receptor = conn["receptor"]
-            target_cell = self.cell_types[target_type]["cell_object"]
-            valid_sections = ["soma"] if loc == "soma" else target_cell.sect_loc[loc]
-            requested_loc = 0.5  # or your snap/default logic
-            for target_gid in conn["target_gids"]:
-                branch = self.synapse_tree[target_gid]
-                branch.setdefault(src_type, {})
-                branch[src_type].setdefault(receptor, {})
-                for sec_name in valid_sections:
-                    branch[src_type][receptor].setdefault(sec_name, [])
-                    if requested_loc not in branch[src_type][receptor][sec_name]:
-                        branch[src_type][receptor][sec_name].append(requested_loc)
-
-    def build_synapse_trees_using_input_tree(self):
-        """Expand cell_type keyed synapse tree into gid keyed synapse tree.
-        """
-        max_gid = max(max(r) for r in self.gid_ranges.values())
-        self.synapse_tree = [dict() for _ in range(max_gid + 1)]
-
-        for target_type, subtree in self.synapse_tree_input.items():
-            if target_type not in self.gid_ranges:
-                continue
-            for target_gid in self.gid_ranges[target_type]:
-                self.synapse_tree[target_gid] = deepcopy(subtree)
-        '''        
 
     def add_connection(
         self,
@@ -1957,7 +1894,36 @@ class Network:
             _connection_probability(conn, probability, conn_seed)
         conn["probability"] = probability
         conn["allow_autapses"] = allow_autapses
-        self.connectivity.append(deepcopy(conn))       
+        self.connectivity.append(deepcopy(conn))
+        rows = []
+        for src_gid, target_gids in conn['gid_pairs'].items():
+            for target_gid in target_gids:
+                target_type = self.gid_to_type(target_gid)
+                target_cell = self.cell_types[target_type]["cell_object"]
+
+                if loc in target_cell.sect_loc:
+                    valid_sections = target_cell.sect_loc[loc]
+                else:
+                    valid_sections = [loc]
+                for section in valid_sections:
+                    nc_dict=conn['nc_dict']
+                    rows.append({
+                        'src_gid': src_gid,
+                        'target_gid': target_gid,
+                        'src_type': self.gid_to_type(src_gids[0]),
+                        'target_type': self.gid_to_type(target_gids[0]),
+                        'receptor': receptor,
+                        'template_loc': loc,
+                        'actual_section': section,       
+                        'segX': 0.5,           # today it is  hardcodes 0.5 for every synapse 
+                        'weight': nc_dict['A_weight'],
+                        'delay': nc_dict['A_delay'],
+                        'lamtha': nc_dict['lamtha'],
+                        'threshold': nc_dict['threshold'],
+                        'gain': nc_dict['gain'],
+                    })
+        self.conn_dataframe = pd.concat([self.conn_dataframe, pd.DataFrame(rows)], ignore_index=True)
+        
 
 
     def clear_connectivity(self):

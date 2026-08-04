@@ -609,47 +609,72 @@ class Cell:
         return self.sections
     
     def create_synapses_orignal(self, sections, synapses):
+        from hnn_core import simple
         """Create synapses."""
         for sec_name in sections:
             for receptor in sections[sec_name].syns:
                 syn_key = f"{sec_name}_{receptor}"
                 seg = self._nrn_sections[sec_name](0.5)
+                simple.total+=1
                 self._nrn_synapses[syn_key] = self.syn_create(seg, **synapses[receptor])
 
-    def create_synapses_using_synapse_trees(self, syn_tree_gid):
-        for source in syn_tree_gid:
-            for receptor in syn_tree_gid[source]:
-                for sec_name in syn_tree_gid[source][receptor]:
-                    #these are prev comments from earlier comments( ignore )
 
-                    # the reason why i was in favour of this synapse_tree structure
-                    # was as is we can just read the input_locations and make the synapse
-                    # . after that we can just update the keys and in the same way update
-                    # the syanpse_tree structure
+    '''
 
-                    # earlier it would have been difficult as we have to change a key but with new synapse_tree structure , we will modify value
+        IGNORE THIS COMMENTED OUT BLOCK
 
-                    # now what we just do is first store the list of all the segments the connection is targeting
-                    # after that we create the synpase using syn_create . after that we just read from the NEURON object returned
-                    # and read from it
-                    input_locations = syn_tree_gid[source][receptor][sec_name]
-                    actual_locations = []
-                    for segment in input_locations:
-                        # at this point i realised that not only we have to fix the synapse_tree structure that contains the wrong
-                        # values of the segment , but also the synapse_keys which denote the segment location .
+        Only reason to keep this function is becuase it currently reads from NEURON and then modify seg values
+        correctivel .
+            
+        def create_synapses_using_synapse_trees(self, syn_tree_gid):
+            for source in syn_tree_gid:
+                for receptor in syn_tree_gid[source]:
+                    for sec_name in syn_tree_gid[source][receptor]:
+                    
+                        input_locations = syn_tree_gid[source][receptor][sec_name]
+                        actual_locations = []
+                        from hnn_core import simple
+                        for segment in input_locations:
+                        
+                            seg = self._nrn_sections[sec_name](segment)
+                            syn = self.syn_create(seg, **self.synapses[receptor])
+                            simple.total+=1
+                            actual_loc = syn.get_segment().x
+                            actual_locations.append(actual_loc)
+                            syn_key = f"{source}_{sec_name}_{receptor}_{actual_loc}"
+                            self._nrn_synapses[syn_key] = syn
 
-                        # how do we access the synapse location
-                        # that value is stored in stored in the NEURON object that is returned by the function syn_create
-                        # to take info from that we first create it seperaetly
-                        seg = self._nrn_sections[sec_name](segment)
-                        syn = self.syn_create(seg, **self.synapses[receptor])
-                        actual_loc = syn.get_segment().x
-                        actual_locations.append(actual_loc)
-                        syn_key = f"{source}_{sec_name}_{receptor}_{actual_loc}"
-                        self._nrn_synapses[syn_key] = syn
+                        syn_tree_gid[source][receptor][sec_name] = actual_locations
+    '''
 
-                    syn_tree_gid[source][receptor][sec_name] = actual_locations
 
+
+
+    def create_synapses_using_connectivity_dataframe(self,target_df):
+        '''
+        we would have to first have all the connectiions which are unique
+        for this particular target gid and a few params(written below). 
+        
+        we take out unique combination values as to ensure same source_cells 
+        that target same gid at same section and at same seg_x.
+        
+        This opposed the thing we discussed in meeting where we decided on target_type instead of source_type.
+        '''
+        from hnn_core import simple
+        for _, row in target_df.iterrows():
+            source = row['src_type']
+            sec_name = row['actual_section']
+            receptor = row['receptor']
+            segment = row['segX']
+            simple.total+=1
+            seg = self._nrn_sections[sec_name](segment)
+            syn = self.syn_create(seg, **self.synapses[receptor])
+            # we can read from NEURON and add the actual segment location like 
+            # we have done above in create_synapses_using_synapse_trees. 
+            # we were currently having 0.5 everywhere so didnt do it.
+            # as it will always be 0.5 then
+            syn_key = f"{source}_{sec_name}_{receptor}_{segment}"
+            self._nrn_synapses[syn_key] = syn
 
     def _create_sections(self, sections, cell_tree):
         """Create soma and set geometry.
@@ -707,7 +732,7 @@ class Cell:
         # https://nrn.readthedocs.io/en/latest/python/modelspec/programmatic/topology/geometry.html?highlight=pt3dadd#pt3dadd  # noqa
         h.define_shape()
 
-    def build(self, sec_name_apical=None,syn_tree_gid=None):
+    def build(self, sec_name_apical=None,target_df=None):
         
         """Build cell in Neuron and insert dipole if applicable.
 
@@ -719,10 +744,10 @@ class Cell:
             of a pyramidal neuron.
         """
         self._create_sections(self.sections, self.cell_tree)
-        if(not(syn_tree_gid)):
+        if target_df is None:
             self.create_synapses_orignal(self.sections,self.synapses)
         else:
-            self.create_synapses_using_synapse_trees(syn_tree_gid)
+            self.create_synapses_using_connectivity_dataframe(target_df)
         self._set_biophysics(self.sections)
         if sec_name_apical in self._nrn_sections:
             self._insert_dipole(sec_name_apical)

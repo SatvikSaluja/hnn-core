@@ -338,7 +338,6 @@ class NetworkBuilder(object):
             self._expose_imem = True
 
         self._rank = 0
-        self._build_exact_synapse_tree()
         self._build()
         
 
@@ -383,94 +382,16 @@ class NetworkBuilder(object):
         self._all_spike_gids = h.Vector()
 
         self._record_spikes()
-        self._connect_celltypes()
+        if self.net.orignal_synapse_creation:
+            self._connect_celltypes()
+        else:
+            self._connect_celltypes_using_dataframe()
 
         if len(self.net.rec_arrays) > 0:
             self._record_extracellular()
 
         if self._rank == 0 and self.net._verbose:
             print("[Done]")
-    def _build_exact_synapse_tree(self):
-        '''
-        This function is almost similar to what i did in network.py . This function
-        will be responsible for both cases
-
-        Case 1 -> if self.net.synapse_tree_input is None or 'default; -> then it will make
-                    from reading the net.connectivity list
-        Case 2- > if self.net.synapse_tree_input is an instance of dictionary (this dictionary 
-        can be either taken as an input or as Austin said , this is the template_synapse_tree Austin
-        was referring about) -> then the synapse_trees will be made according to this input 
-        '''
-        net=self.net
-        max_gid = max(max(r) for r in net.gid_ranges.values())
-        tree = [dict() for _ in range(max_gid + 1)]
-
-        #case 2 
-        if isinstance(net.synapse_tree_input, dict):
-            for target_type, subtree in net.synapse_tree_input.items():
-                if target_type not in net.gid_ranges:
-                    continue
-                for target_gid in net.gid_ranges[target_type]:
-                    tree[target_gid] = deepcopy(subtree)
-            net.synapse_tree = tree
-
-        #we loop over connectivty
-            for conn in net.connectivity:
-                src_type = conn["src_type"]
-                #we just check the source types
-                #and see if it not net.cell_types ( meaning it's a drive (not L2_pyr,L5_pyr,L2_basket,L5_basket))
-                if src_type not in net.cell_types:
-                    #then it is the same loop as we had done below in case 1
-                    target_type = conn["target_type"]
-                    loc = conn["loc"]
-                    receptor = conn["receptor"]
-                    target_cell = net.cell_types[target_type]["cell_object"]
-
-                    if loc in target_cell.sect_loc:
-                        valid_sections = target_cell.sect_loc[loc]
-                    else:
-                        valid_sections = [loc]
-
-                    requested_loc = 0.5
-
-                    for target_gid in conn["target_gids"]:
-                        syn_tree = tree[target_gid]
-                        syn_tree.setdefault(src_type, {})
-                        syn_tree[src_type].setdefault(receptor, {})
-                        for sec_name in valid_sections:
-                            syn_tree[src_type][receptor].setdefault(sec_name, [])
-                            if requested_loc not in syn_tree[src_type][receptor][sec_name]:
-                                syn_tree[src_type][receptor][sec_name].append(requested_loc)
-
-            net.synapse_tree = tree
-            return
-        
-        else:# case 1 
-            for conn in net.connectivity:
-                src_type = conn["src_type"]
-                target_type = conn["target_type"]
-                loc = conn["loc"]
-                receptor = conn["receptor"]
-                target_cell = net.cell_types[target_type]["cell_object"]
-
-                if loc in target_cell.sect_loc:
-                    valid_sections = target_cell.sect_loc[loc]
-                else:
-                    valid_sections = [loc]
-
-                requested_loc = 0.5
-
-                for target_gid in conn["target_gids"]:
-                    syn_tree = tree[target_gid]
-                    syn_tree.setdefault(src_type, {})
-                    syn_tree[src_type].setdefault(receptor, {})
-                    for sec_name in valid_sections:
-                        syn_tree[src_type][receptor].setdefault(sec_name, [])
-                        if requested_loc not in syn_tree[src_type][receptor][sec_name]:
-                            syn_tree[src_type][receptor][sec_name].append(requested_loc)
-
-            net.synapse_tree = tree
-
 
     def _gid_assign(self, rank=None, n_hosts=None):
         """Assign cell IDs to this node
@@ -551,20 +472,15 @@ class NetworkBuilder(object):
                 # instantiate NEURON object
                 # using meta data style
                 src_type_metadata = self.net.cell_types[src_type]["cell_metadata"]
-                if self.net.orignal_synapse_creation:
-                    if src_type_metadata.get("measure_dipole", False):
-                        cell.build(sec_name_apical="apical_trunk")
-                    else:
-                        cell.build()
+                target_df=None
+                if not self.net.orignal_synapse_creation:
+                    target_df = self.net.conn_dataframe.loc[
+                        self.net.conn_dataframe['target_gid'] == gid,
+                        ['src_type', 'actual_section', 'segX', 'receptor']].drop_duplicates()
+                if src_type_metadata.get("measure_dipole", False):
+                    cell.build(target_df=target_df,sec_name_apical="apical_trunk")
                 else:
-                    # self.net.synapse_tree is guaranteed to be built by this
-                    # point,as _build_exact_synapse_tree() runs in
-                    # NetworkBuilder.__init__ before this method is called
-                    syn_tree_gid = self.net.synapse_tree[gid]
-                    if src_type_metadata.get("measure_dipole", False):
-                        cell.build(syn_tree_gid=syn_tree_gid,sec_name_apical="apical_trunk")
-                    else:
-                        cell.build(syn_tree_gid=syn_tree_gid)
+                    cell.build(target_df=target_df)
                 # add tonic biases
                 for bias in self.net.external_biases:
                     if src_type in self.net.external_biases[bias]:
@@ -669,6 +585,60 @@ class NetworkBuilder(object):
                             net._inplane_distance,
                         )
                         self.ncs[connection_name].append(nc)
+
+
+    def _connect_celltypes_using_dataframe(self):
+        # in connectivity dataframe one row means one connection
+
+        #from line 593 to 601 has just been copied from the orignal connect_celltypes
+        net = self.net
+        df = net.conn_dataframe
+
+        assert len(self._cells) == len(self._gid_list) - len(self._drive_cells)
+
+        # local gid -> index in self._cells, for cells on this rank
+        gid_to_idx = {gid: idx for idx, gid in enumerate(self._gid_list)}
+
+        for row in df.itertuples(index=False):
+            target_gid = row.target_gid
+            if not _PC.gid_exists(target_gid):
+                continue
+
+            src_gid = row.src_gid
+            src_type = row.src_type
+            target_type = row.target_type
+            receptor = row.receptor
+            sec_name = row.actual_section
+            segX = row.segX
+
+            target_cell = self._cells[gid_to_idx[target_gid]]
+
+            connection_name = (
+                f"{_short_name(src_type)}_{_short_name(target_type)}_{receptor}"
+            )
+            if connection_name not in self.ncs:
+                self.ncs[connection_name] = list()
+
+            pos_idx = src_gid - net.gid_ranges[_long_name(src_type)][0]
+            #these lines from 624 to 631 have also been copied from orignal connect_celltypes
+            nc_dict = {
+                "A_weight": row.weight * row.gain,
+                "A_delay": row.delay,
+                "lamtha": row.lamtha,
+                "threshold": row.threshold,
+                "gain": row.gain,
+                "pos_src": net.pos_dict[_long_name(src_type)][pos_idx],
+            }
+
+            syn_key = f"{src_type}_{sec_name}_{receptor}_{segX}"
+
+            nc = target_cell.parconnect_from_src(
+                src_gid,
+                nc_dict,
+                target_cell._nrn_synapses[syn_key],
+                net._inplane_distance,
+            )
+            self.ncs[connection_name].append(nc)                
 
     def _record_extracellular(self):
         for arr_name, arr in self.net.rec_arrays.items():

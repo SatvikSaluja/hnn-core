@@ -71,7 +71,7 @@ def neymotin_2020_model(
     add_drives_from_params=False,
     legacy_mode=False,
     mesh_shape=(10, 10),    
-    synapse_tree=None,
+    orignal_synapse_creation=True,
 ):
     """Instantiate the network model described in Neymotin et al. 2020
 
@@ -173,7 +173,7 @@ def neymotin_2020_model(
         mesh_shape=mesh_shape,
         pos_dict=pos_dict,
         cell_types=cell_types,
-        synapse_tree=synapse_tree,
+        orignal_synpase_creation=orignal_synapse_creation,
     )    
     delay = net.delay
 
