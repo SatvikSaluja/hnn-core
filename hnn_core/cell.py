@@ -662,7 +662,7 @@ class Cell:
         '''
         from hnn_core import simple
         for _, row in target_df.iterrows():
-            source = row['src_type']
+            target = row['target_type']
             sec_name = row['actual_section']
             receptor = row['receptor']
             segment = row['segX']
@@ -673,7 +673,7 @@ class Cell:
             # we have done above in create_synapses_using_synapse_trees. 
             # we were currently having 0.5 everywhere so didnt do it.
             # as it will always be 0.5 then
-            syn_key = f"{source}_{sec_name}_{receptor}_{segment}"
+            syn_key = f"{target}_{sec_name}_{receptor}_{segment}"
             self._nrn_synapses[syn_key] = syn
 
     def _create_sections(self, sections, cell_tree):

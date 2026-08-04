@@ -476,7 +476,7 @@ class NetworkBuilder(object):
                 if not self.net.orignal_synapse_creation:
                     target_df = self.net.conn_dataframe.loc[
                         self.net.conn_dataframe['target_gid'] == gid,
-                        ['src_type', 'actual_section', 'segX', 'receptor']].drop_duplicates()
+                        ['target_type', 'actual_section', 'segX', 'receptor']].drop_duplicates()
                 if src_type_metadata.get("measure_dipole", False):
                     cell.build(target_df=target_df,sec_name_apical="apical_trunk")
                 else:
@@ -614,7 +614,7 @@ class NetworkBuilder(object):
             target_cell = self._cells[gid_to_idx[target_gid]]
 
             connection_name = (
-                f"{_short_name(src_type)}_{_short_name(target_type)}_{receptor}"
+                f"{_short_name(target_type)}_{_short_name(target_type)}_{receptor}"
             )
             if connection_name not in self.ncs:
                 self.ncs[connection_name] = list()
@@ -630,7 +630,7 @@ class NetworkBuilder(object):
                 "pos_src": net.pos_dict[_long_name(src_type)][pos_idx],
             }
 
-            syn_key = f"{src_type}_{sec_name}_{receptor}_{segX}"
+            syn_key = f"{target_type}_{sec_name}_{receptor}_{segX}"
 
             nc = target_cell.parconnect_from_src(
                 src_gid,
