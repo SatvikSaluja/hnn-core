@@ -623,7 +623,7 @@ class Cell:
 
         IGNORE THIS COMMENTED OUT BLOCK
 
-        Only reason to keep this function is becuase it currently reads from NEURON and then modify seg values
+        Only reason to keep this function is because it currently reads from NEURON and then modify seg values
         correctivel .
             
         def create_synapses_using_synapse_trees(self, syn_tree_gid):
@@ -671,7 +671,7 @@ class Cell:
             syn = self.syn_create(seg, **self.synapses[receptor])
             # we can read from NEURON and add the actual segment location like 
             # we have done above in create_synapses_using_synapse_trees. 
-            # we were currently having 0.5 everywhere so didnt do it.
+            # we were currently having 0.5 everywhere so didn't do it.
             # as it will always be 0.5 then
             syn_key = f"{target}_{sec_name}_{receptor}_{segment}"
             self._nrn_synapses[syn_key] = syn

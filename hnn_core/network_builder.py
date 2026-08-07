@@ -590,7 +590,7 @@ class NetworkBuilder(object):
     def _connect_celltypes_using_dataframe(self):
         # in connectivity dataframe one row means one connection
 
-        #from line 593 to 601 has just been copied from the orignal connect_celltypes
+        #from line 593 to 601 has just been copied from the original connect_celltypes
         net = self.net
         df = net.conn_dataframe
 
@@ -614,13 +614,13 @@ class NetworkBuilder(object):
             target_cell = self._cells[gid_to_idx[target_gid]]
 
             connection_name = (
-                f"{_short_name(target_type)}_{_short_name(target_type)}_{receptor}"
+                f"{_short_name(src_type)}_{_short_name(target_type)}_{receptor}"
             )
             if connection_name not in self.ncs:
                 self.ncs[connection_name] = list()
 
             pos_idx = src_gid - net.gid_ranges[_long_name(src_type)][0]
-            #these lines from 624 to 631 have also been copied from orignal connect_celltypes
+            #these lines from 624 to 631 have also been copied from original connect_celltypes
             nc_dict = {
                 "A_weight": row.weight * row.gain,
                 "A_delay": row.delay,
