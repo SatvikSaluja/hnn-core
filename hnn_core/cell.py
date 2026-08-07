@@ -665,7 +665,7 @@ class Cell:
             target = row['target_type']
             sec_name = row['actual_section']
             receptor = row['receptor']
-            segment = row['segX']
+            segX = row['segX']
             simple.total+=1
             seg = self._nrn_sections[sec_name](segment)
             syn = self.syn_create(seg, **self.synapses[receptor])
