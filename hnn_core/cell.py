@@ -609,13 +609,11 @@ class Cell:
         return self.sections
     
     def create_synapses_orignal(self, sections, synapses):
-        from hnn_core import simple
         """Create synapses."""
         for sec_name in sections:
             for receptor in sections[sec_name].syns:
                 syn_key = f"{sec_name}_{receptor}"
                 seg = self._nrn_sections[sec_name](0.5)
-                simple.total+=1
                 self._nrn_synapses[syn_key] = self.syn_create(seg, **synapses[receptor])
 
 
