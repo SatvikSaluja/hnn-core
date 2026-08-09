@@ -8,7 +8,7 @@ for conn_idx, conn in enumerate(net_ney.connectivity):
     # for each iteration create a new network
     net1 = jones_2009_model(orignal_synapse_creation=True)
     net1.clear_connectivity()
-    # this creates the connections old style (up to and including conn_idx)
+    # this creates the connections old style 
     for c in net_ney.connectivity[:conn_idx + 1]:
         net1.add_connection(
             c["src_type"], c["target_type"], c["loc"], c["receptor"],
@@ -18,7 +18,7 @@ for conn_idx, conn in enumerate(net_ney.connectivity):
     net2 = jones_2009_model(orignal_synapse_creation=False)
     net2.conn_dataframe = pd.DataFrame()
     net2.clear_connectivity()
-    # now create with synapse tree
+    # now create with dataframe
     for c in net_ney.connectivity[:conn_idx + 1]:
         net2.add_connection(
             c["src_type"], c["target_type"], c["loc"], c["receptor"],
