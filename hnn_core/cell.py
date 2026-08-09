@@ -667,13 +667,13 @@ class Cell:
             receptor = row['receptor']
             segX = row['segX']
             simple.total+=1
-            seg = self._nrn_sections[sec_name](segment)
+            seg = self._nrn_sections[sec_name](segX)
             syn = self.syn_create(seg, **self.synapses[receptor])
             # we can read from NEURON and add the actual segment location like 
             # we have done above in create_synapses_using_synapse_trees. 
             # we were currently having 0.5 everywhere so didn't do it.
             # as it will always be 0.5 then
-            syn_key = f"{target}_{sec_name}_{receptor}_{segment}"
+            syn_key = f"{target}_{sec_name}_{receptor}_{segX}"
             self._nrn_synapses[syn_key] = syn
 
     def _create_sections(self, sections, cell_tree):

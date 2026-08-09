@@ -472,7 +472,7 @@ class Network:
                 DeprecationWarning,
                 stacklevel=1,
             )
-
+        self.conn_dataframe=pd.DataFrame()
         self.cell_response = None
         # external drives and biases
         self.external_drives = dict()
@@ -482,7 +482,7 @@ class Network:
         self.threshold = self._params["threshold"]
         self.delay = 1.0
         self.orignal_synapse_creation = orignal_synpase_creation
-        
+
         # extracellular recordings (if applicable)
         self.rec_arrays = dict()
 
@@ -563,7 +563,7 @@ class Network:
 
         self._tstop = None
         self._dt = None
-        self.conn_dataframe=pd.DataFrame()
+        
 
     def __repr__(self):
         class_name = self.__class__.__name__
@@ -1894,7 +1894,7 @@ class Network:
             _connection_probability(conn, probability, conn_seed)
         conn["probability"] = probability
         conn["allow_autapses"] = allow_autapses
-        self.connectivity.append(deepcopy(conn))
+        #self.connectivity.append(deepcopy(conn))
         rows = []
         for src_gid, target_gids in conn['gid_pairs'].items():
             for target_gid in target_gids:
@@ -1922,7 +1922,7 @@ class Network:
                         'threshold': nc_dict['threshold'],
                         'gain': nc_dict['gain'],
                     })
-        self.conn_dataframe = pd.concat([self.conn_dataframe, pd.DataFrame(rows)], ignore_index=True)
+        self.conn_dataframe=pd.concat([self.conn_dataframe, pd.DataFrame(rows)], ignore_index=True)
         
 
 

@@ -7,6 +7,4 @@ net.add_evoked_drive('evprox', mu=40, sigma=5, numspikes=1,
     weights_ampa={'L2_pyramidal': 0.01, 'L5_pyramidal': 0.01},
     synaptic_delays={'L2_pyramidal': 0.1, 'L5_pyramidal': 0.1},)
 df = net.conn_dataframe
-x= df[['target_type', 'actual_section', 'segX', 'receptor','target_gid']].drop_duplicates()
-print(x)
-dpls=simulate_dipole(net,tstop=1,dt=0.025)
+dpls=simulate_dipole(net,tstop=130,dt=0.025)
