@@ -70,7 +70,7 @@ def neymotin_2020_model(
     params=None,
     add_drives_from_params=False,
     legacy_mode=False,
-    mesh_shape=(10, 10),    
+    mesh_shape=(10, 10),
     orignal_synapse_creation=True,
 ):
     """Instantiate the network model described in Neymotin et al. 2020
@@ -174,7 +174,7 @@ def neymotin_2020_model(
         pos_dict=pos_dict,
         cell_types=cell_types,
         orignal_synpase_creation=orignal_synapse_creation,
-    )    
+    )
     delay = net.delay
 
     # source of synapse is always at soma
@@ -281,7 +281,15 @@ def neymotin_2020_model(
     weight = net._params[key]
     loc = "soma"
     receptor = "ampa"
-    net.add_connection(src_cell, target_cell, loc, receptor, weight, delay, lamtha,)
+    net.add_connection(
+        src_cell,
+        target_cell,
+        loc,
+        receptor,
+        weight,
+        delay,
+        lamtha,
+    )
 
     src_cell = "L2_pyramidal"
     lamtha = 3.0
@@ -289,7 +297,15 @@ def neymotin_2020_model(
     weight = net._params[key]
     loc = "soma"
     receptor = "ampa"
-    net.add_connection(src_cell, target_cell, loc, receptor, weight, delay, lamtha,)
+    net.add_connection(
+        src_cell,
+        target_cell,
+        loc,
+        receptor,
+        weight,
+        delay,
+        lamtha,
+    )
 
     return net
 
@@ -362,7 +378,13 @@ def jones_2009_model(
         DeprecationWarning,
     )
 
-    net = neymotin_2020_model(params, add_drives_from_params, legacy_mode, mesh_shape,orignal_synapse_creation=orignal_synapse_creation,)
+    net = neymotin_2020_model(
+        params,
+        add_drives_from_params,
+        legacy_mode,
+        mesh_shape,
+        orignal_synapse_creation=orignal_synapse_creation,
+    )
     return net
 
 

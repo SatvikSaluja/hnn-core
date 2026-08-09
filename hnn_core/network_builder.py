@@ -267,6 +267,7 @@ def _create_parallel_context(n_cores=None, expose_imem=False):
     if expose_imem:
         _CVODE.use_fast_imem(1)
 
+
 class NetworkBuilder(object):
     """The NetworkBuilder class.
 
@@ -339,7 +340,6 @@ class NetworkBuilder(object):
 
         self._rank = 0
         self._build()
-        
 
     def _build(self):
         """Building the network in NEURON."""
@@ -472,13 +472,14 @@ class NetworkBuilder(object):
                 # instantiate NEURON object
                 # using meta data style
                 src_type_metadata = self.net.cell_types[src_type]["cell_metadata"]
-                target_df=None
+                target_df = None
                 if not self.net.orignal_synapse_creation:
                     target_df = self.net.conn_dataframe.loc[
-                        self.net.conn_dataframe['target_gid'] == gid,
-                        ['target_type', 'actual_section', 'segX', 'receptor']].drop_duplicates()
+                        self.net.conn_dataframe["target_gid"] == gid,
+                        ["target_type", "actual_section", "segX", "receptor"],
+                    ].drop_duplicates()
                 if src_type_metadata.get("measure_dipole", False):
-                    cell.build(target_df=target_df,sec_name_apical="apical_trunk")
+                    cell.build(target_df=target_df, sec_name_apical="apical_trunk")
                 else:
                     cell.build(target_df=target_df)
                 # add tonic biases
@@ -575,7 +576,9 @@ class NetworkBuilder(object):
                                 if receptor not in syn_tree[src_type][sec_name]:
                                     continue
                                 for segment in syn_tree[src_type][sec_name][receptor]:
-                                    syn_keys.append(f"{src_type}_{sec_name}_{receptor}_{segment}")
+                                    syn_keys.append(
+                                        f"{src_type}_{sec_name}_{receptor}_{segment}"
+                                    )
 
                     for syn_key in syn_keys:
                         nc = target_cell.parconnect_from_src(
@@ -586,11 +589,10 @@ class NetworkBuilder(object):
                         )
                         self.ncs[connection_name].append(nc)
 
-
     def _connect_celltypes_using_dataframe(self):
         # in connectivity dataframe one row means one connection
 
-        #from line 593 to 601 has just been copied from the original connect_celltypes
+        # from line 593 to 601 has just been copied from the original connect_celltypes
         net = self.net
         df = net.conn_dataframe
 
@@ -620,7 +622,7 @@ class NetworkBuilder(object):
                 self.ncs[connection_name] = list()
 
             pos_idx = src_gid - net.gid_ranges[_long_name(src_type)][0]
-            #these lines from 624 to 631 have also been copied from original connect_celltypes
+            # these lines from 624 to 631 have also been copied from original connect_celltypes
             nc_dict = {
                 "A_weight": row.weight * row.gain,
                 "A_delay": row.delay,
@@ -638,7 +640,7 @@ class NetworkBuilder(object):
                 target_cell._nrn_synapses[syn_key],
                 net._inplane_distance,
             )
-            self.ncs[connection_name].append(nc)                
+            self.ncs[connection_name].append(nc)
 
     def _record_extracellular(self):
         for arr_name, arr in self.net.rec_arrays.items():

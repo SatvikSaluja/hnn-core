@@ -607,7 +607,7 @@ class Cell:
                             seg_vals.append(val(sec_end_dist + (seg_x * section.L)))
                         p_mech[attr] = [seg_xs, seg_vals]
         return self.sections
-    
+
     def create_synapses_orignal(self, sections, synapses):
         """Create synapses."""
         for sec_name in sections:
@@ -616,8 +616,7 @@ class Cell:
                 seg = self._nrn_sections[sec_name](0.5)
                 self._nrn_synapses[syn_key] = self.syn_create(seg, **synapses[receptor])
 
-
-    '''
+    """
 
         IGNORE THIS COMMENTED OUT BLOCK
 
@@ -643,32 +642,30 @@ class Cell:
                             self._nrn_synapses[syn_key] = syn
 
                         syn_tree_gid[source][receptor][sec_name] = actual_locations
-    '''
+    """
 
-
-
-
-    def create_synapses_using_connectivity_dataframe(self,target_df):
-        '''
+    def create_synapses_using_connectivity_dataframe(self, target_df):
+        """
         we would have to first have all the connectiions which are unique
-        for this particular target gid and a few params(written below). 
-        
-        we take out unique combination values as to ensure same source_cells 
+        for this particular target gid and a few params(written below).
+
+        we take out unique combination values as to ensure same source_cells
         that target same gid at same section and at same seg_x.
-        
+
         This opposed the thing we discussed in meeting where we decided on target_type instead of source_type.
-        '''
+        """
         from hnn_core import simple
+
         for _, row in target_df.iterrows():
-            target = row['target_type']
-            sec_name = row['actual_section']
-            receptor = row['receptor']
-            segX = row['segX']
-            simple.total+=1
+            target = row["target_type"]
+            sec_name = row["actual_section"]
+            receptor = row["receptor"]
+            segX = row["segX"]
+            simple.total += 1
             seg = self._nrn_sections[sec_name](segX)
             syn = self.syn_create(seg, **self.synapses[receptor])
-            # we can read from NEURON and add the actual segment location like 
-            # we have done above in create_synapses_using_synapse_trees. 
+            # we can read from NEURON and add the actual segment location like
+            # we have done above in create_synapses_using_synapse_trees.
             # we were currently having 0.5 everywhere so didn't do it.
             # as it will always be 0.5 then
             syn_key = f"{target}_{sec_name}_{receptor}_{segX}"
@@ -730,8 +727,7 @@ class Cell:
         # https://nrn.readthedocs.io/en/latest/python/modelspec/programmatic/topology/geometry.html?highlight=pt3dadd#pt3dadd  # noqa
         h.define_shape()
 
-    def build(self, sec_name_apical=None,target_df=None):
-        
+    def build(self, sec_name_apical=None, target_df=None):
         """Build cell in Neuron and insert dipole if applicable.
 
         Parameters
@@ -743,7 +739,7 @@ class Cell:
         """
         self._create_sections(self.sections, self.cell_tree)
         if target_df is None:
-            self.create_synapses_orignal(self.sections,self.synapses)
+            self.create_synapses_orignal(self.sections, self.synapses)
         else:
             self.create_synapses_using_connectivity_dataframe(target_df)
         self._set_biophysics(self.sections)

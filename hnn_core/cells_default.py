@@ -253,8 +253,7 @@ def _cell_L2Pyr(override_params, pos=(0.0, 0.0, 0), gid=0):
     p_mech = _get_mechanisms(p_all, "L2Pyr", ["soma"] + section_names, mechanisms)
 
     syn_sections = ["apical_tuft", "apical_oblique", "basal_2", "basal_3"]
-    
-    
+
     for sec_name, section in sections.items():
         section._end_pts = end_pts[sec_name]
         section.mechs = p_mech[sec_name]
@@ -414,8 +413,7 @@ def _cell_L5Pyr(override_params, pos=(0.0, 0.0, 0), gid=0):
     p_mech = _get_mechanisms(p_all, "L5Pyr", ["soma"] + section_names, mechanisms)
 
     syn_sections = ["apical_tuft", "apical_oblique", "basal_2", "basal_3"]
-    
-    
+
     for sec_name, section in sections.items():
         section._end_pts = end_pts[sec_name]
         section.mechs = p_mech[sec_name]

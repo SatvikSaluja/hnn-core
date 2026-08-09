@@ -29,6 +29,7 @@ from .externals.mne import copy_doc
 from .utils import _replace_dict_identifier
 import pandas as pd
 
+
 def _create_cell_coords(n_pyr_x, n_pyr_y, z_coord, inplane_distance):
     """Creates coordinate grid and place cells in it.
 
@@ -471,7 +472,7 @@ class Network:
                 DeprecationWarning,
                 stacklevel=1,
             )
-        self.conn_dataframe=pd.DataFrame()
+        self.conn_dataframe = pd.DataFrame()
         self.cell_response = None
         # external drives and biases
         self.external_drives = dict()
@@ -499,7 +500,6 @@ class Network:
             raise ValueError(
                 f"mesh_shape must be a tuple of positive integers, got: {mesh_shape}"
             )
-
 
         self._N_pyr_x = mesh_shape[0]
         self._N_pyr_y = mesh_shape[1]
@@ -562,7 +562,6 @@ class Network:
 
         self._tstop = None
         self._dt = None
-        
 
     def __repr__(self):
         class_name = self.__class__.__name__
@@ -1893,9 +1892,9 @@ class Network:
             _connection_probability(conn, probability, conn_seed)
         conn["probability"] = probability
         conn["allow_autapses"] = allow_autapses
-        #self.connectivity.append(deepcopy(conn))
+        # self.connectivity.append(deepcopy(conn))
         rows = []
-        for src_gid, target_gids in conn['gid_pairs'].items():
+        for src_gid, target_gids in conn["gid_pairs"].items():
             for target_gid in target_gids:
                 target_type = self.gid_to_type(target_gid)
                 target_cell = self.cell_types[target_type]["cell_object"]
@@ -1905,25 +1904,27 @@ class Network:
                 else:
                     valid_sections = [loc]
                 for section in valid_sections:
-                    nc_dict=conn['nc_dict']
-                    rows.append({
-                        'src_gid': src_gid,
-                        'target_gid': target_gid,
-                        'src_type': self.gid_to_type(src_gids[0]),
-                        'target_type': self.gid_to_type(target_gids[0]),
-                        'receptor': receptor,
-                        'template_loc': loc,
-                        'actual_section': section,       
-                        'segX': 0.5,           # today it is  hardcodes 0.5 for every synapse 
-                        'weight': nc_dict['A_weight'],
-                        'delay': nc_dict['A_delay'],
-                        'lamtha': nc_dict['lamtha'],
-                        'threshold': nc_dict['threshold'],
-                        'gain': nc_dict['gain'],
-                    })
-        self.conn_dataframe=pd.concat([self.conn_dataframe, pd.DataFrame(rows)], ignore_index=True)
-        
-
+                    nc_dict = conn["nc_dict"]
+                    rows.append(
+                        {
+                            "src_gid": src_gid,
+                            "target_gid": target_gid,
+                            "src_type": self.gid_to_type(src_gids[0]),
+                            "target_type": self.gid_to_type(target_gids[0]),
+                            "receptor": receptor,
+                            "template_loc": loc,
+                            "actual_section": section,
+                            "segX": 0.5,  # today it is  hardcodes 0.5 for every synapse
+                            "weight": nc_dict["A_weight"],
+                            "delay": nc_dict["A_delay"],
+                            "lamtha": nc_dict["lamtha"],
+                            "threshold": nc_dict["threshold"],
+                            "gain": nc_dict["gain"],
+                        }
+                    )
+        self.conn_dataframe = pd.concat(
+            [self.conn_dataframe, pd.DataFrame(rows)], ignore_index=True
+        )
 
     def clear_connectivity(self):
         """Remove all connections defined in Network.connectivity"""
@@ -2284,6 +2285,7 @@ class Network:
             )
 
         return standardized_data, n_drive_cells, source_to_gid_map
+
 
 class _Connectivity(dict):
     """A class for containing the connectivity details of the network
