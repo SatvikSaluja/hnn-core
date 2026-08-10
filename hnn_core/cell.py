@@ -655,7 +655,6 @@ class Cell:
         This opposed the thing we discussed in meeting where we decided on target_type instead of source_type.
         """
 
-
         for _, row in target_df.iterrows():
             target = row["target_type"]
             sec_name = row["actual_section"]
