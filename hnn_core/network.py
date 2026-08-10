@@ -1892,7 +1892,7 @@ class Network:
             _connection_probability(conn, probability, conn_seed)
         conn["probability"] = probability
         conn["allow_autapses"] = allow_autapses
-        # self.connectivity.append(deepcopy(conn))
+        self.connectivity.append(deepcopy(conn))
         rows = []
         for src_gid, target_gids in conn["gid_pairs"].items():
             for target_gid in target_gids:

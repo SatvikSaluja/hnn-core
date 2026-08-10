@@ -654,14 +654,13 @@ class Cell:
 
         This opposed the thing we discussed in meeting where we decided on target_type instead of source_type.
         """
-        from hnn_core import simple
+
 
         for _, row in target_df.iterrows():
             target = row["target_type"]
             sec_name = row["actual_section"]
             receptor = row["receptor"]
             segX = row["segX"]
-            simple.total += 1
             seg = self._nrn_sections[sec_name](segX)
             syn = self.syn_create(seg, **self.synapses[receptor])
             # we can read from NEURON and add the actual segment location like
