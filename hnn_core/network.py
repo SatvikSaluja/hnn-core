@@ -439,12 +439,12 @@ class Network:
     def __init__(
         self,
         params,
+        use_data_frame=False,
         add_drives_from_params=False,
         legacy_mode=False,
         mesh_shape=(10, 10),
         pos_dict=None,
         cell_types=None,
-        orignal_synpase_creation=True,
     ):
         # Save the parameters used to create the Network
         _validate_type(params, dict, "params")
@@ -481,8 +481,9 @@ class Network:
         self.connectivity = list()
         self.threshold = self._params["threshold"]
         self.delay = 1.0
-        self.orignal_synapse_creation = orignal_synpase_creation
-
+        self.use_data_frame=use_data_frame
+        if isinstance(self.use_data_frame,pd.DataFrame):
+            self.conn_dataframe=use_data_frame
         # extracellular recordings (if applicable)
         self.rec_arrays = dict()
 
@@ -1892,39 +1893,41 @@ class Network:
             _connection_probability(conn, probability, conn_seed)
         conn["probability"] = probability
         conn["allow_autapses"] = allow_autapses
-        self.connectivity.append(deepcopy(conn))
-        rows = []
-        for src_gid, target_gids in conn["gid_pairs"].items():
-            for target_gid in target_gids:
-                target_type = self.gid_to_type(target_gid)
-                target_cell = self.cell_types[target_type]["cell_object"]
+        if isinstance(self.use_data_frame,bool) and not self.use_data_frame:
+            self.connectivity.append(deepcopy(conn))
+        else:
+            rows = []
+            for src_gid, target_gids in conn["gid_pairs"].items():
+                for target_gid in target_gids:
+                    target_type = self.gid_to_type(target_gid)
+                    target_cell = self.cell_types[target_type]["cell_object"]
 
-                if loc in target_cell.sect_loc:
-                    valid_sections = target_cell.sect_loc[loc]
-                else:
-                    valid_sections = [loc]
-                for section in valid_sections:
-                    nc_dict = conn["nc_dict"]
-                    rows.append(
-                        {
-                            "src_gid": src_gid,
-                            "target_gid": target_gid,
-                            "src_type": self.gid_to_type(src_gids[0]),
-                            "target_type": self.gid_to_type(target_gids[0]),
-                            "receptor": receptor,
-                            "template_loc": loc,
-                            "actual_section": section,
-                            "segX": 0.5,  # today it is  hardcodes 0.5 for every synapse
-                            "weight": nc_dict["A_weight"],
-                            "delay": nc_dict["A_delay"],
-                            "lamtha": nc_dict["lamtha"],
-                            "threshold": nc_dict["threshold"],
-                            "gain": nc_dict["gain"],
-                        }
-                    )
-        self.conn_dataframe = pd.concat(
-            [self.conn_dataframe, pd.DataFrame(rows)], ignore_index=True
-        )
+                    if loc in target_cell.sect_loc:
+                        valid_sections = target_cell.sect_loc[loc]
+                    else:
+                        valid_sections = [loc]
+                    for section in valid_sections:
+                        nc_dict = conn["nc_dict"]
+                        rows.append(
+                            {
+                                "src_gid": src_gid,
+                                "target_gid": target_gid,
+                                "src_type": self.gid_to_type(src_gids[0]),
+                                "target_type": self.gid_to_type(target_gids[0]),
+                                "receptor": receptor,
+                                "template_loc": loc,
+                                "actual_section": section,
+                                "segX": 0.5,  # today it is  hardcodes 0.5 for every synapse
+                                "weight": nc_dict["A_weight"],
+                                "delay": nc_dict["A_delay"],
+                                "lamtha": nc_dict["lamtha"],
+                                "threshold": nc_dict["threshold"],
+                                "gain": nc_dict["gain"],
+                            }
+                        )
+            self.conn_dataframe = pd.concat(
+                [self.conn_dataframe, pd.DataFrame(rows)], ignore_index=True
+            )
 
     def clear_connectivity(self):
         """Remove all connections defined in Network.connectivity"""

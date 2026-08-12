@@ -382,7 +382,7 @@ class NetworkBuilder(object):
         self._all_spike_gids = h.Vector()
 
         self._record_spikes()
-        if self.net.orignal_synapse_creation:
+        if isinstance(self.net.use_data_frame,bool) and not self.net.use_data_frame:
             self._connect_celltypes()
         else:
             self._connect_celltypes_using_dataframe()
@@ -473,7 +473,7 @@ class NetworkBuilder(object):
                 # using meta data style
                 src_type_metadata = self.net.cell_types[src_type]["cell_metadata"]
                 target_df = None
-                if not self.net.orignal_synapse_creation:
+                if self.net.use_data_frame:
                     target_df = self.net.conn_dataframe.loc[
                         self.net.conn_dataframe["target_gid"] == gid,
                         ["target_type", "actual_section", "segX", "receptor"],
@@ -554,32 +554,13 @@ class NetworkBuilder(object):
                     nc_dict["pos_src"] = net.pos_dict[_long_name(src_type)][pos_idx]
                     # get synapse locations( now we modify it as we use synapse_tree)
                     syn_keys = list()
-                    if self.net.orignal_synapse_creation:
-                        # Targeting group of sections like proximal or distal
-                        if loc in target_cell.sect_loc:
-                            for sect in target_cell.sect_loc[loc]:
-                                syn_keys.append(f"{sect}_{receptor}")
-                        # Targeting individual section like soma or apical_tuft
-                        else:
-                            syn_keys = [f"{loc}_{receptor}"]
+                    # Targeting group of sections like proximal or distal
+                    if loc in target_cell.sect_loc:
+                        for sect in target_cell.sect_loc[loc]:
+                            syn_keys.append(f"{sect}_{receptor}")
+                    # Targeting individual section like soma or apical_tuft
                     else:
-                        syn_tree = self.net.synapse_tree[target_gid]
-                        # Targeting group of sections like proximal or distal
-                        if loc in target_cell.sect_loc:
-                            valid_sections = target_cell.sect_loc[loc]
-                        else:
-                            valid_sections = [loc]
-                        if src_type in syn_tree:
-                            for sec_name in valid_sections:
-                                if sec_name not in syn_tree[src_type]:
-                                    continue
-                                if receptor not in syn_tree[src_type][sec_name]:
-                                    continue
-                                for segment in syn_tree[src_type][sec_name][receptor]:
-                                    syn_keys.append(
-                                        f"{src_type}_{sec_name}_{receptor}_{segment}"
-                                    )
-
+                        syn_keys = [f"{loc}_{receptor}"]
                     for syn_key in syn_keys:
                         nc = target_cell.parconnect_from_src(
                             src_gid,
