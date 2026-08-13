@@ -609,13 +609,13 @@ class Cell:
         return self.sections
     
     def create_synapses_orignal(self, sections, synapses):
-        from hnn_core import simple
+        #from hnn_core import simple
         """Create synapses."""
         for sec_name in sections:
             for receptor in sections[sec_name].syns:
                 syn_key = f"{sec_name}_{receptor}"
                 seg = self._nrn_sections[sec_name](0.5)
-                simple.total+=1
+                #simple.total+=1
                 self._nrn_synapses[syn_key] = self.syn_create(seg, **synapses[receptor])
 
 
@@ -660,20 +660,20 @@ class Cell:
         
         This opposed the thing we discussed in meeting where we decided on target_type instead of source_type.
         '''
-        from hnn_core import simple
+        #from hnn_core import simple
         for _, row in target_df.iterrows():
-            source = row['src_type']
+            target = row['target_type']
             sec_name = row['actual_section']
             receptor = row['receptor']
             segment = row['segX']
-            simple.total+=1
+            #simple.total+=1
             seg = self._nrn_sections[sec_name](segment)
             syn = self.syn_create(seg, **self.synapses[receptor])
             # we can read from NEURON and add the actual segment location like 
             # we have done above in create_synapses_using_synapse_trees. 
             # we were currently having 0.5 everywhere so didnt do it.
             # as it will always be 0.5 then
-            syn_key = f"{source}_{sec_name}_{receptor}_{segment}"
+            syn_key = f"{target}_{sec_name}_{receptor}_{segment}"
             self._nrn_synapses[syn_key] = syn
 
     def _create_sections(self, sections, cell_tree):
