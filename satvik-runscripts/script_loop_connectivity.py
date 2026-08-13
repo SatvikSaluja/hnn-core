@@ -1,13 +1,14 @@
 import numpy as np
-from hnn_core import jones_2009_model, simulate_dipole
+from hnn_core import neymotin_2020_model, simulate_dipole
 import pandas as pd
-net_ney = jones_2009_model(orignal_synapse_creation=True)
+net_ney = neymotin_2020_model(use_data_frame=False)
 
 for conn_idx, conn in enumerate(net_ney.connectivity):
 
     # for each iteration create a new network
-    net1 = jones_2009_model(orignal_synapse_creation=True)
+    net1 = neymotin_2020_model(use_data_frame=True)
     net1.clear_connectivity()
+    net1.conn_dataframe = pd.DataFrame()
     # this creates the connections old style 
     for c in net_ney.connectivity[:conn_idx + 1]:
         net1.add_connection(
@@ -15,7 +16,7 @@ for conn_idx, conn in enumerate(net_ney.connectivity):
             c["nc_dict"]["A_weight"], c["nc_dict"]["A_delay"], c["nc_dict"]["lamtha"],
         )
 
-    net2 = jones_2009_model(orignal_synapse_creation=False)
+    net2 = neymotin_2020_model(use_data_frame=False)
     net2.conn_dataframe = pd.DataFrame()
     net2.clear_connectivity()
     # now create with dataframe
