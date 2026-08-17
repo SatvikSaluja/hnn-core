@@ -419,20 +419,24 @@ class NetworkBuilder(object):
                 # only assign drive gids that have a target cell gid already
                 # assigned to this rank
                 for src_gid in self.net.gid_ranges[drive["name"]]:
-                    conn_idxs = pick_connection(self.net, src_gids=src_gid)
-                    target_gids = set()
-                    for conn_idx in conn_idxs:
-                        gid_pairs = self.net.connectivity[conn_idx]["gid_pairs"]
-                        if src_gid in gid_pairs:
-                            target_gids.update(
-                                self.net.connectivity[conn_idx]["gid_pairs"][src_gid]
-                            )
-
+                    if self.net.use_data_frame:
+                        target_gids = set(
+                            self.net.conn_dataframe.loc[
+                                self.net.conn_dataframe["src_gid"] == src_gid,
+                                "target_gid",
+                            ]
+                        )
+                    else:
+                        conn_idxs = pick_connection(self.net, src_gids=src_gid)
+                        target_gids = set()
+                        for conn_idx in conn_idxs:
+                            gid_pairs = self.net.connectivity[conn_idx]["gid_pairs"]
+                            if src_gid in gid_pairs:
+                                target_gids.update(
+                                    self.net.connectivity[conn_idx]["gid_pairs"][src_gid]
+                                )
                     for target_gid in target_gids:
-                        if (
-                            target_gid in self._gid_list
-                            and src_gid not in self._gid_list
-                        ):
+                        if target_gid in self._gid_list and src_gid not in self._gid_list:
                             self._gid_list.append(src_gid)
             else:
                 # round robin assignment of drive gids

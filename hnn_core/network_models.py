@@ -133,18 +133,8 @@ def neymotin_2020_model(
         params = read_params(params)
     if isinstance(use_data_frame, str):
         use_data_frame = pd.read_pickle(use_data_frame)# we need to validate this 
-
-    # the next lines in comments we dont need for comments , its just for explaning my understanding.
-
-    #elif  isinstance dataframe
-        # then let it the dataframe the user inputted . we would need to validate it.
-
-    #elif if is true or false
-        # then let it remain a bool . we dont need validation here as this would only seperate in add_connection .
-
-    #     
-
-    
+        #validate_data_frame()
+            
     # Define cell types for Jones 2009 model
     # data is here in metaData format
     cell_types = {

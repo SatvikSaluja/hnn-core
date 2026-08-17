@@ -1495,15 +1495,21 @@ class Network:
                     )
                     trial_seed_offset = self._n_gids
                     if drive["cell_specific"]:
-                        # loop over drives (one for each target cell
-                        # population) and create event times
-                        conn_idxs = pick_connection(self, src_gids=drive_cell_gid)
-                        target_types = set(
-                            [
-                                self.connectivity[conn_idx]["target_type"]
-                                for conn_idx in conn_idxs
-                            ]
-                        )
+                        if self.use_data_frame:
+                            target_types = set(
+                                self.conn_dataframe.loc[
+                                    self.conn_dataframe["src_gid"] == drive_cell_gid,
+                                    "target_type",
+                                ]
+                            )
+                        else:
+                            conn_idxs = pick_connection(self, src_gids=drive_cell_gid)
+                            target_types = set(
+                                [
+                                    self.connectivity[conn_idx]["target_type"]
+                                    for conn_idx in conn_idxs
+                                ]
+                            )
                         for target_type in target_types:
                             event_times.append(
                                 _drive_cell_event_times(
@@ -1893,7 +1899,8 @@ class Network:
             _connection_probability(conn, probability, conn_seed)
         conn["probability"] = probability
         conn["allow_autapses"] = allow_autapses
-        self.connectivity.append(deepcopy(conn))
+        if isinstance(self.use_data_frame,bool) and not self.use_data_frame :
+            self.connectivity.append(deepcopy(conn))
         rows = []
         for src_gid, target_gids in conn["gid_pairs"].items():
             for target_gid in target_gids:
