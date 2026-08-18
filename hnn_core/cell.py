@@ -646,7 +646,7 @@ class Cell:
 
     def create_synapses_using_connectivity_dataframe(self, target_df):
         """
-        we would have to first have all the connectiions which are unique
+        we would have to first have all the connections which are unique
         for this particular target gid and a few params(written below).
 
         we take out unique combination values as to ensure same source_cells
