@@ -2365,25 +2365,38 @@ class _Connectivity(dict):
 
         return entr
 
-class ConnectivityList(list):
-    #this class is for deprecated wrapper around net.connectivity.
-    
+import inspect
+import warnings
 
-    _DEPRECATION_MSG = (
-        '''Direct access to net.connectivity will be deprecated in
-           the next release and will be replaced by dataframe . To
-           understand how to access connectivity go to tutorial x
-        '''
+
+class ConnectivityList(list):
+    DEPRECATION_MSG = (
+        """Direct access to net.connectivity will be deprecated in
+        the next release and will be replaced by dataframe. To
+        understand how to access connectivity go to tutorial x
+        """
     )
 
     def __getitem__(self, key):
-        warnings.warn(self._DEPRECATION_MSG, FutureWarning, stacklevel=2)
+        caller = inspect.stack()[1].filename
+
+        if not (
+            caller.endswith("network.py")
+            or caller.endswith("network_builder.py")
+        ):
+            warnings.warn(
+                self.DEPRECATION_MSG,
+                FutureWarning,
+                stacklevel=2
+            )
+
         return super().__getitem__(key)
 
     def __repr__(self):
         return (
-            "`net.connectivity` is deprecated — connection data now "
-            "lives in `net.connectivity_df`. " + super().__repr__()
+            """net.connectivity is deprecated - connection data now
+            lives in net.connectivity_df. """
+            + super().__repr__()
         )
 
 class _NetworkDrive(dict):
