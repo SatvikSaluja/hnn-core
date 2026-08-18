@@ -1,15 +1,47 @@
 from hnn_core import neymotin_2020_model, simulate_dipole
+net_a = neymotin_2020_model(use_data_frame=False)
+net_a.add_evoked_drive(
+    "evprox",
+    mu=40,
+    sigma=5,
+    numspikes=1,
+    location="proximal",
+    weights_ampa={
+        "L2_pyramidal": 0.01,
+        "L5_pyramidal": 0.01,
+    },
+    synaptic_delays={
+        "L2_pyramidal": 0.1,
+        "L5_pyramidal": 0.1,
+    },
+)
+dpls_a = simulate_dipole(net_a, tstop=170, dt=0.025)
+net_b = neymotin_2020_model(use_data_frame=False)
+net_b.connectivity[15]['nc_dict']['A_weight'] = 5123333333333333333333333
 
-net = neymotin_2020_model(use_data_frame=True)
+net_b.add_evoked_drive(
+    "evprox",
+    mu=40,
+    sigma=5,
+    numspikes=1,
+    location="proximal",
+    weights_ampa={
+        "L2_pyramidal": 0.01,
+        "L5_pyramidal": 0.01,
+    },
+    synaptic_delays={
+        "L2_pyramidal": 0.1,
+        "L5_pyramidal": 0.1,
+    },
+)
+dpls_b = simulate_dipole(net_b, tstop=170, dt=0.025)
 
-print(net.conn_dataframe)# if u add drives , the number of rows ( depicting one connection ), will increase
-# however the number of synapses doesnt increase
-dpls=simulate_dipole(net,tstop=170,dt=0.025)
-from neuron import h
-def count_neuron_synapses():
-    print(len(h.List("Exp2Syn")))
+import numpy as np
 
-    # we can print it also
-    #for x in h.List("Exp2Syn"):
-    #    print(x)
-count_neuron_synapses()
+print(np.allclose(
+    dpls_a[0].data['agg'],
+    dpls_b[0].data['agg']
+))
+
+
+

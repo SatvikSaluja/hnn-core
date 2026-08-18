@@ -28,7 +28,7 @@ from .hnn_io import write_network_configuration, network_to_dict
 from .externals.mne import copy_doc
 from .utils import _replace_dict_identifier
 import pandas as pd
-
+import warnings
 
 def _create_cell_coords(n_pyr_x, n_pyr_y, z_coord, inplane_distance):
     """Creates coordinate grid and place cells in it.
@@ -478,7 +478,7 @@ class Network:
         self.external_drives = dict()
         self.external_biases = dict()
         # network connectivity
-        self.connectivity = list()
+        self.connectivity = ConnectivityList()
         self.threshold = self._params["threshold"]
         self.delay = 1.0
         self.use_data_frame=use_data_frame
@@ -2365,6 +2365,26 @@ class _Connectivity(dict):
 
         return entr
 
+class ConnectivityList(list):
+    #this class is for deprecated wrapper around net.connectivity.
+    
+
+    _DEPRECATION_MSG = (
+        '''Direct access to net.connectivity will be deprecated in
+           the next release and will be replaced by dataframe . To
+           understand how to access connectivity go to tutorial x
+        '''
+    )
+
+    def __getitem__(self, key):
+        warnings.warn(self._DEPRECATION_MSG, FutureWarning, stacklevel=2)
+        return super().__getitem__(key)
+
+    def __repr__(self):
+        return (
+            "`net.connectivity` is deprecated — connection data now "
+            "lives in `net.connectivity_df`. " + super().__repr__()
+        )
 
 class _NetworkDrive(dict):
     """A class for containing the parameters of external drives
