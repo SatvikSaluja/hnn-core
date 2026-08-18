@@ -621,7 +621,7 @@ class Cell:
         IGNORE THIS COMMENTED OUT BLOCK
 
         Only reason to keep this function is because it currently reads from NEURON and then modify seg values
-        correctivel .
+        correctly.
             
         def create_synapses_using_synapse_trees(self, syn_tree_gid):
             for source in syn_tree_gid:
