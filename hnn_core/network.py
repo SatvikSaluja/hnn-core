@@ -439,7 +439,7 @@ class Network:
     def __init__(
         self,
         params,
-        use_data_frame=False,
+        use_dataframe=False,
         add_drives_from_params=False,
         legacy_mode=False,
         mesh_shape=(10, 10),
