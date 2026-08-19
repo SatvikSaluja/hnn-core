@@ -2372,6 +2372,8 @@ import warnings
 
 
 class ConnectivityList(list):
+    """This is a temporary class used to warn users about an API change
+        whenever they attempt to access or modify the connectivity."""
     DEPRECATION_MSG = (
         """Direct access to net.connectivity will be deprecated in
         the next release and will be replaced by dataframe. To
