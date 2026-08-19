@@ -252,6 +252,7 @@ def _cell_L2Pyr(override_params, pos=(0.0, 0.0, 0), gid=0):
     }
     p_mech = _get_mechanisms(p_all, "L2Pyr", ["soma"] + section_names, mechanisms)
 
+    # This variable allows for specifying where synapses are allowed to be placed
     syn_sections = ["apical_tuft", "apical_oblique", "basal_2", "basal_3"]
 
     for sec_name, section in sections.items():
