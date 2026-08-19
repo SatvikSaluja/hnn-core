@@ -382,7 +382,7 @@ class NetworkBuilder(object):
         self._all_spike_gids = h.Vector()
 
         self._record_spikes()
-        if isinstance(self.net.use_data_frame,bool) and not self.net.use_data_frame:
+        if not self.net.use_data_frame:
             self._connect_celltypes()
         else:
             self._connect_celltypes_using_dataframe()
