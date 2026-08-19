@@ -28,9 +28,7 @@ from .hnn_io import write_network_configuration, network_to_dict
 from .externals.mne import copy_doc
 from .utils import _replace_dict_identifier
 import pandas as pd
-import warnings
 import inspect
-import warnings
 
 def _create_cell_coords(n_pyr_x, n_pyr_y, z_coord, inplane_distance):
     """Creates coordinate grid and place cells in it.

@@ -619,15 +619,14 @@ class Cell:
 
     def create_synapses_using_connectivity_dataframe(self, target_df):
         """
-        we would have to first have all the connectiions which are unique
-        for this particular target gid and a few params(written below).
+            Create synapses for a target cell using connectivity information.
 
-        we take out unique combination values as to ensure same source_cells
-        that target same gid at same section and at same seg_x.
+        Unique combinations of the target GID, section, and seg_x are identified
+        to ensure that connections targeting the same location are grouped
+        together and do not create duplicate synapses.
 
-        This opposed the thing we discussed in meeting where we decided on target_type instead of source_type.
-        """
-
+        Connections are grouped based on their target cell and target location.
+    """
         for _, row in target_df.iterrows():
             target = row["target_type"]
             sec_name = row["actual_section"]
