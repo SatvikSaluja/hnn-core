@@ -1510,6 +1510,8 @@ class Network:
                                     for conn_idx in conn_idxs
                                 ]
                             )
+                        # loop over drives (one for each target cell
+                        # population) and create event times
                         for target_type in target_types:
                             event_times.append(
                                 _drive_cell_event_times(
