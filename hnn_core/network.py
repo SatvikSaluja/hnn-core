@@ -1924,7 +1924,7 @@ class Network:
                             "receptor": receptor,
                             "template_loc": loc,
                             "actual_section": section,
-                            "segX": 0.5,  # today it is  hardcodes 0.5 for every synapse
+                            "segX": 0.5, # synapse is placed in the middle of the section by default
                             "weight": nc_dict["A_weight"],
                             "delay": nc_dict["A_delay"],
                             "lamtha": nc_dict["lamtha"],
