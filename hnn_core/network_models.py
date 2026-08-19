@@ -72,7 +72,7 @@ def neymotin_2020_model(
     add_drives_from_params=False,
     legacy_mode=False,
     mesh_shape=(10, 10),
-    use_data_frame=False,
+    use_dataframe=False,
 ):
     """Instantiate the network model described in Neymotin et al. 2020
 
@@ -82,7 +82,7 @@ def neymotin_2020_model(
         The path to the parameter file for constructing the network.
         If None, parameters loaded from default.json
         Default: None
-    use_data_frame : True | False | Dataframe | Path of a string containing path
+    use_dataframe : True | False | Dataframe | Path of a string containing path
         If False(default) ,used connectivity list to place synapses
         If True , uses dataframe object to place the synapses.
         Also , users can also input a custom dataframe or path storing dataframe./
@@ -131,8 +131,8 @@ def neymotin_2020_model(
         params = op.join(hnn_core_root, "param", "default.json")
     if isinstance(params, str):
         params = read_params(params)
-    if isinstance(use_data_frame, str):
-        use_data_frame = pd.read_pickle(use_data_frame)# we need to validate this 
+    if isinstance(use_dataframe, str):
+        use_dataframe = pd.read_pickle(use_dataframe)# we need to validate this 
         #validate_data_frame()
             
     # Define cell types for Jones 2009 model
@@ -181,11 +181,11 @@ def neymotin_2020_model(
         mesh_shape=mesh_shape,
         pos_dict=pos_dict,
         cell_types=cell_types,
-        use_data_frame=use_data_frame,
+        use_dataframe=use_dataframe,
     )
     delay = net.delay
 
-    if isinstance(use_data_frame,bool) :
+    if isinstance(use_dataframe,bool) :
         # source of synapse is always at soma
 
         # layer2 Pyr -> layer2 Pyr

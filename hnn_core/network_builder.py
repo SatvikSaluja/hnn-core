@@ -382,7 +382,7 @@ class NetworkBuilder(object):
         self._all_spike_gids = h.Vector()
 
         self._record_spikes()
-        if not self.net.use_data_frame:
+        if not self.net.use_dataframe:
             self._connect_celltypes()
         else:
             self._connect_celltypes_using_dataframe()
@@ -419,10 +419,10 @@ class NetworkBuilder(object):
                 # only assign drive gids that have a target cell gid already
                 # assigned to this rank
                 for src_gid in self.net.gid_ranges[drive["name"]]:
-                    if self.net.use_data_frame:
+                    if self.net.use_dataframe:
                         target_gids = set(
-                            self.net.conn_dataframe.loc[
-                                self.net.conn_dataframe["src_gid"] == src_gid,
+                            self.net.connectivity_df.loc[
+                                self.net.connectivity_df["src_gid"] == src_gid,
                                 "target_gid",
                             ]
                         )
@@ -477,9 +477,9 @@ class NetworkBuilder(object):
                 # using meta data style
                 src_type_metadata = self.net.cell_types[src_type]["cell_metadata"]
                 target_df = None
-                if self.net.use_data_frame:
-                    target_df = self.net.conn_dataframe.loc[
-                        self.net.conn_dataframe["target_gid"] == gid,
+                if self.net.use_dataframe:
+                    target_df = self.net.connectivity_df.loc[
+                        self.net.connectivity_df["target_gid"] == gid,
                         ["target_type", "actual_section", "segX", "receptor"],
                     ].drop_duplicates()
                 if src_type_metadata.get("measure_dipole", False):
@@ -575,11 +575,15 @@ class NetworkBuilder(object):
                         self.ncs[connection_name].append(nc)
 
     def _connect_celltypes_using_dataframe(self):
-        # in connectivity dataframe one row means one connection
+        """
+        Create synaptic connections between cell types using the connectivity DataFrame.
 
-        # from line 593 to 601 has just been copied from the original connect_celltypes
+        Each row of the DataFrame represents a connection and contains the
+        information required to identify the source and target cell types and
+        configure the corresponding synapse.
+    """
         net = self.net
-        df = net.conn_dataframe
+        df = net.connectivity_df
 
         assert len(self._cells) == len(self._gid_list) - len(self._drive_cells)
 

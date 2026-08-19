@@ -608,7 +608,7 @@ class Cell:
                         p_mech[attr] = [seg_xs, seg_vals]
         return self.sections
 
-    def create_synapses_orignal(self, sections, synapses):
+    def create_synapses_original(self, sections, synapses):
         """Create synapses."""
         for sec_name in sections:
             for receptor in sections[sec_name].syns:
@@ -616,37 +616,10 @@ class Cell:
                 seg = self._nrn_sections[sec_name](0.5)
                 self._nrn_synapses[syn_key] = self.syn_create(seg, **synapses[receptor])
 
-    """
-
-        IGNORE THIS COMMENTED OUT BLOCK
-
-        Only reason to keep this function is because it currently reads from NEURON and then modify seg values
-        correctly.
-            
-        def create_synapses_using_synapse_trees(self, syn_tree_gid):
-            for source in syn_tree_gid:
-                for receptor in syn_tree_gid[source]:
-                    for sec_name in syn_tree_gid[source][receptor]:
-                    
-                        input_locations = syn_tree_gid[source][receptor][sec_name]
-                        actual_locations = []
-                        from hnn_core import simple
-                        for segment in input_locations:
-                        
-                            seg = self._nrn_sections[sec_name](segment)
-                            syn = self.syn_create(seg, **self.synapses[receptor])
-                            simple.total+=1
-                            actual_loc = syn.get_segment().x
-                            actual_locations.append(actual_loc)
-                            syn_key = f"{source}_{sec_name}_{receptor}_{actual_loc}"
-                            self._nrn_synapses[syn_key] = syn
-
-                        syn_tree_gid[source][receptor][sec_name] = actual_locations
-    """
 
     def create_synapses_using_connectivity_dataframe(self, target_df):
         """
-        we would have to first have all the connections which are unique
+        we would have to first have all the connectiions which are unique
         for this particular target gid and a few params(written below).
 
         we take out unique combination values as to ensure same source_cells
@@ -737,7 +710,7 @@ class Cell:
         """
         self._create_sections(self.sections, self.cell_tree)
         if target_df is None:
-            self.create_synapses_orignal(self.sections, self.synapses)
+            self.create_synapses_original(self.sections, self.synapses)
         else:
             self.create_synapses_using_connectivity_dataframe(target_df)
         self._set_biophysics(self.sections)

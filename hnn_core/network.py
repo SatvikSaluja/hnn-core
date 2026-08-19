@@ -29,6 +29,8 @@ from .externals.mne import copy_doc
 from .utils import _replace_dict_identifier
 import pandas as pd
 import warnings
+import inspect
+import warnings
 
 def _create_cell_coords(n_pyr_x, n_pyr_y, z_coord, inplane_distance):
     """Creates coordinate grid and place cells in it.
@@ -472,7 +474,7 @@ class Network:
                 DeprecationWarning,
                 stacklevel=1,
             )
-        self.conn_dataframe = pd.DataFrame()
+        self.connectivity_df = pd.DataFrame()
         self.cell_response = None
         # external drives and biases
         self.external_drives = dict()
@@ -481,9 +483,9 @@ class Network:
         self.connectivity = ConnectivityList()
         self.threshold = self._params["threshold"]
         self.delay = 1.0
-        self.use_data_frame=use_data_frame
-        if isinstance(self.use_data_frame,pd.DataFrame):
-            self.conn_dataframe=use_data_frame
+        self.use_dataframe=use_dataframe
+        if isinstance(self.use_dataframe,pd.DataFrame):
+            self.connectivity_df=use_dataframe
         # extracellular recordings (if applicable)
         self.rec_arrays = dict()
 
@@ -1495,10 +1497,10 @@ class Network:
                     )
                     trial_seed_offset = self._n_gids
                     if drive["cell_specific"]:
-                        if self.use_data_frame:
+                        if self.use_dataframe:
                             target_types = set(
-                                self.conn_dataframe.loc[
-                                    self.conn_dataframe["src_gid"] == drive_cell_gid,
+                                self.connectivity_df.loc[
+                                    self.connectivity_df["src_gid"] == drive_cell_gid,
                                     "target_type",
                                 ]
                             )
@@ -1901,7 +1903,7 @@ class Network:
             _connection_probability(conn, probability, conn_seed)
         conn["probability"] = probability
         conn["allow_autapses"] = allow_autapses
-        if isinstance(self.use_data_frame,bool) and not self.use_data_frame :
+        if isinstance(self.use_dataframe,bool) and not self.use_dataframe :
             self.connectivity.append(deepcopy(conn))
         rows = []
         for src_gid, target_gids in conn["gid_pairs"].items():
@@ -1932,8 +1934,8 @@ class Network:
                             "gain": nc_dict["gain"],
                         }
                     )
-        self.conn_dataframe = pd.concat(
-            [self.conn_dataframe, pd.DataFrame(rows)], ignore_index=True
+        self.connectivity_df = pd.concat(
+            [self.connectivity_df, pd.DataFrame(rows)], ignore_index=True
         )
 
     def clear_connectivity(self):
@@ -2367,8 +2369,6 @@ class _Connectivity(dict):
 
         return entr
 
-import inspect
-import warnings
 
 
 class ConnectivityList(list):
