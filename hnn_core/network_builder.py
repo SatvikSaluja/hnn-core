@@ -556,7 +556,7 @@ class NetworkBuilder(object):
                     pos_idx = src_gid - net.gid_ranges[_long_name(src_type)][0]
                     # NB pos_dict for this drive must include ALL cell types!
                     nc_dict["pos_src"] = net.pos_dict[_long_name(src_type)][pos_idx]
-                    # get synapse locations( now we modify it as we use synapse_tree)
+                    # get synapse locations
                     syn_keys = list()
                     # Targeting group of sections like proximal or distal
                     if loc in target_cell.sect_loc:
