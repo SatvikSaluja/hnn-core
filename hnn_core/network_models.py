@@ -426,7 +426,7 @@ def jones_2009_model(
     add_drives_from_params=False,
     legacy_mode=False,
     mesh_shape=(10, 10),
-    orignal_synapse_creation=True,
+    use_dataframe=False,
 ):
     """Instantiate the network model described in Jones et al., 2009.
 
@@ -494,7 +494,7 @@ def jones_2009_model(
         add_drives_from_params,
         legacy_mode,
         mesh_shape,
-        orignal_synapse_creation=orignal_synapse_creation,
+        use_dataframe=use_dataframe,
     )
     return net
 
@@ -504,7 +504,7 @@ def law_2021_model(
     add_drives_from_params=False,
     legacy_mode=False,
     mesh_shape=(10, 10),
-    orignal_synapse_creation=True,
+    use_dataframe=False,
 ):
     """Instantiate the expansion of Jones 2009 model to study beta
     modulated ERPs as described in
@@ -549,7 +549,7 @@ def law_2021_model(
         add_drives_from_params,
         legacy_mode,
         mesh_shape=mesh_shape,
-        orignal_synapse_creation=orignal_synapse_creation,
+        use_dataframe=use_dataframe,
     )
     # Ensure model_variant and params' cell types match current model (same cell types
     # as 'neymotin_2020_model')
@@ -606,7 +606,7 @@ def calcium_model(
     add_drives_from_params=False,
     legacy_mode=False,
     mesh_shape=(10, 10),
-    orignal_synapse_creation=True,
+    use_dataframe=False,
 ):
     """Instantiate the Jones 2009 model with improved calcium dynamics in
     L5 pyramidal neurons. For more details on changes to calcium dynamics
@@ -646,7 +646,7 @@ def calcium_model(
         add_drives_from_params,
         legacy_mode,
         mesh_shape=mesh_shape,
-        orignal_synapse_creation=orignal_synapse_creation,
+        use_dataframe=use_dataframe,
     )
 
     # Ensure model_variant and params' cell types match current model (same cell types
