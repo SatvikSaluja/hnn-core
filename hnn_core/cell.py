@@ -429,7 +429,6 @@ class Cell:
             [
                 "build",
                 "copy",
-                "create_tonic_bias",
                 "define_shape",
                 "distance_section",
                 "gid",
@@ -616,7 +615,6 @@ class Cell:
                 seg = self._nrn_sections[sec_name](0.5)
                 self._nrn_synapses[syn_key] = self.syn_create(seg, **synapses[receptor])
 
-
     def create_synapses_using_connectivity_dataframe(self, target_df):
         """
             Create synapses for a target cell using connectivity information.
@@ -626,7 +624,7 @@ class Cell:
         together and do not create duplicate synapses.
 
         Connections are grouped based on their target cell and target location.
-    """
+        """
         for _, row in target_df.iterrows():
             target = row["target_type"]
             sec_name = row["actual_section"]
@@ -784,7 +782,9 @@ class Cell:
             dpp.ztan = seg_lens_z[-1]
         self.dipole = h.Vector().record(self.dpl_ref)
 
-    def create_tonic_bias(self, amplitude, t0, tstop, section="soma", loc=0.5):
+    def _create_tonic_bias(
+        self, amplitude, t0, tstop, section="soma", loc=0.5, gid=None
+    ):
         """Create tonic bias at defined section.
 
         Parameters
@@ -928,7 +928,7 @@ class Cell:
                 # This tries to obtain the synapse object as if it is an attribute of
                 # the HOC interpreter as a whole, which all valid synapse mechanisms
                 # should be. In other words, if you have compiled a synapse mechanism
-                # called e.g. 'NMDA_gao', then `h.NMDA_gao` should exist.
+                # called e.g. 'NMDA_gao2021', then `h.NMDA_gao2021` should exist.
                 synapse_class = getattr(h, kwargs["mechname"])
             except AttributeError:
                 raise ValueError(
@@ -954,7 +954,6 @@ class Cell:
                         f"Synapse mechanism '{kwargs['mechname']}' does not have a parameter "
                         f"named '{param_name}'."
                     )
-
         return syn
 
     def setup_source_netcon(self, threshold):

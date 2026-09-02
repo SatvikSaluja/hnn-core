@@ -32,17 +32,50 @@ merged into `master`! Use `git log` instead and cross-reference instead. -->
 
 ### New Features
 
+- Users can now specify their own custom objective function in two different ways:
+    1. Passing a `obj_fun='custom'` to `Optimizer`. If passing `custom`, then users can
+      provide a function that simply accepts a single `Dipole` object and accepts
+      `obj_fun_kwargs`. They must then pass this function as `loss_fun` in
+      `Optimizer.fit`. More details are available in the description for
+      `Optimizer.fit`.
+    2. Passing their own callable via `obj_fun=<callable>`. If users want to use an
+      objective function that does not use only a single `Dipole`, then they can write
+      their own function similar to the existing code in
+      `optimization/objective_functions.py` and pass that function to
+      `Optimizer(... obj_fun=<function>)`. Note that this function must accept all the
+      same arguments as the other objective functions in
+      `optimization/objective_functions.py` and run a simulation.
+      by [Vaishnavi Baghel][] in {gh}`1271`.
+
 ### Upcoming Deprecations
 
 ### Bug Fixes
+
+- [Camilo Diaz][] did considerable work in fixing our long-standing MPI Timeout issues
+  and putting in place a permanent solution that uses tempfiles instead of standard
+  input/output/error streams. Thanks Camilo!
 
 ### Public API Changes
 
 ### People who contributed to this release:
 
+- [Vaishnavi Baghel][]
+- [Arnesh Banerjee][]
 - [Shivansh Bhageria][]
+- [Camilo Diaz][]
 
 ### Changelog
+
+- Improvements to some visualization documentation,
+  by [Arnesh Banerjee][] in {gh}`1332`.
+
+- Easier optimization custom function usage
+  by [Vaishnavi Baghel][] in {gh}`1271`.
+
+- Document and remove problematic MPI Timeouts (while keeping code intact), and
+  implement a new tempfile-based mechanism for transmitting MPI data from child
+  processes back to rank 0 child process then parent process,
+  by [Camilo Diaz][] in {gh}`1312` and {gh}`1315`.
 
 - Improve y-axis labels and ticks of LFP and CSD plotting,
   by [Shivansh Bhageria][] in {gh}`1191`. This was their first PR, thanks Shivansh!
@@ -230,6 +263,10 @@ here](https://github.com/jonescompneurolab/hnn-core/releases/tag/v0.6.0).
   by [Tushar Jamdade][] in {gh}`1214`. This was their first PR, thanks Tushar!
 
 ----------------------------------------------------------------------------------------
+
+### Public API Changes
+
+- `BatchSimulate` now expects the `set_params` callback to accept arguments in the order `(net, param_values)` instead of `(param_values, net)`, aligning it with the `Optimizer` class, by [Rahul Tripathi][] in {gh}`1208`.
 
 ## 0.5.0 Release Notes
 
@@ -1447,6 +1484,7 @@ v0.4 represents a major milestone in development of `hnn_core` and the HNN ecosy
 [Mohamed W. ElSayed]: https://github.com/wagdy88
 [Maira Usman]: https://github.com/Myrausman
 [Chetan Kandpal]: https://github.com/Chetank99
+[Rahul Tripathi]: https://github.com/Rahul-2k4
 [NEURON]: https://nrn.readthedocs.io
 [Karthikeya Kodlai]: https://github.com/sketch123456
 [Tushar Jamdade]: https://github.com/Tusharjamdade
@@ -1458,3 +1496,4 @@ v0.4 represents a major milestone in development of `hnn_core` and the HNN ecosy
 [Percival Villalva]: https://github.com/pervillalva
 [Anna Cattani]: https://github.com/annacatt
 [Shivansh Bhageria]: https://github.com/Shivansh1205
+[Arnesh Banerjee]: https://github.com/ArneshBanerjee

@@ -7,7 +7,7 @@ from typing import Dict, Tuple
 import pytest
 import pickle
 
-import os.path as op
+from pathlib import Path
 import hnn_core
 from hnn_core import read_params, neymotin_2020_model, simulate_dipole
 from hnn_core import MPIBackend, JoblibBackend
@@ -81,11 +81,12 @@ def run_hnn_core_fixture():
         record_ca=False,
         postproc=False,
         electrode_array=None,
+        bsl_cor=None,
     ):
-        hnn_core_root = op.dirname(hnn_core.__file__)
+        hnn_core_root = Path(hnn_core.__file__).parent
 
         # default params
-        params_fname = op.join(hnn_core_root, "param", "default.json")
+        params_fname = hnn_core_root / "param" / "default.json"
         params = read_params(params_fname)
 
         tstop = 170.0
@@ -120,6 +121,7 @@ def run_hnn_core_fixture():
                     record_ca=record_ca,
                     postproc=postproc,
                     tstop=tstop,
+                    bsl_cor=bsl_cor,
                 )
         elif backend == "joblib":
             with JoblibBackend(n_jobs=n_jobs):
@@ -130,6 +132,7 @@ def run_hnn_core_fixture():
                     record_ca=record_ca,
                     postproc=postproc,
                     tstop=tstop,
+                    bsl_cor=bsl_cor,
                 )
         else:
             dpls = simulate_dipole(
@@ -139,6 +142,7 @@ def run_hnn_core_fixture():
                 record_ca=record_ca,
                 postproc=postproc,
                 tstop=tstop,
+                bsl_cor=bsl_cor,
             )
 
         # check that the network object is picklable after the simulation
